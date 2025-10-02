@@ -1,0 +1,74 @@
+﻿@model IEnumerable<mvc.Models.Categoria>
+
+@{
+    ViewData["Title"] = "Lista de Categorías";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+
+
+<h1>Lista de Categorías</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">➕ Nueva Categoría</a>
+</p>
+
+<table id="tablaCategorias" class="table table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.CategoriaID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Nombre)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Descripcion)
+            </th>
+            <th>
+                Acciones
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CategoriaID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Nombre)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Descripcion)
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a asp-action="Edit" asp-route-id="@item.CategoriaID" class="btn btn-warning">✏ Editar</a>
+                        <a asp-action="Details" asp-route-id="@item.CategoriaID" class="btn btn-info">🔍 Detalles</a>
+                        <a asp-action="Delete" asp-route-id="@item.CategoriaID" class="btn btn-danger">🗑 Eliminar</a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#tablaCategorias').DataTable({
+                "pageLength": 10, // Mostrar 10 registros por página
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" // Traducir a español
+                },
+                "responsive": true // Para que se adapte a dispositivos móviles
+            });
+        });
+    </script>
+}

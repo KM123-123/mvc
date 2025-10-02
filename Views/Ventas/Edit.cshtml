@@ -1,0 +1,170 @@
+﻿@model mvc.Models.Ventas
+
+@{
+    ViewData["Title"] = "Editar Venta";
+}
+
+<h1>Editar Venta</h1>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["ModelErrors"] != null)
+{
+    <div class="alert alert-danger">
+        <strong>Errores de validación:</strong>
+        <p>@TempData["ModelErrors"]</p>
+    </div>
+}
+
+@if (TempData["Exception"] != null)
+{
+    <div class="alert alert-danger">
+        <strong>Error:</strong> @TempData["Exception"]
+    </div>
+}
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="VentaID" />
+    <input type="hidden" asp-for="UsuarioID" />
+
+    <!-- Cliente -->
+    <div class="form-group">
+        <label asp-for="ClienteID" class="control-label"></label>
+        <select asp-for="ClienteID" class="form-control" asp-items="ViewBag.ClienteID" id="clienteSelect">
+            <option value="">-- Seleccionar Cliente --</option>
+        </select>
+        <span asp-validation-for="ClienteID" class="text-danger"></span>
+    </div>
+
+    <!-- Info del cliente -->
+    <div id="clienteInfo" style="margin-top:10px; display:none;">
+        <strong>Detalles del cliente:</strong>
+        <p><b>ID:</b> <span id="cliId"></span></p>
+        <p><b>NIT:</b> <span id="cliNit"></span></p>
+        <p><b>Nombre:</b> <span id="cliNombre"></span></p>
+    </div>
+
+    <!-- Producto -->
+    <div class="form-group">
+        <label asp-for="ProductoID" class="control-label"></label>
+        <select asp-for="ProductoID" class="form-control" asp-items="ViewBag.ProductoID" id="productoSelect">
+            <option value="">-- Seleccionar Producto --</option>
+        </select>
+        <span asp-validation-for="ProductoID" class="text-danger"></span>
+    </div>
+
+    <!-- Info del producto -->
+    <div id="productoInfo" style="margin-top:10px; display:none;">
+        <strong>Detalles del producto:</strong>
+        <p><b>ID:</b> <span id="prodId"></span></p>
+        <p><b>Código:</b> <span id="prodCodigo"></span></p>
+        <p><b>Descripción:</b> <span id="prodNombre"></span></p>
+        <p><b>Precio Unitario:</b> Q<span id="prodPrecio"></span></p>
+    </div>
+
+    <!-- Cantidad -->
+    <div class="form-group">
+        <label asp-for="Cantidad" class="control-label"></label>
+        <input asp-for="Cantidad" class="form-control" id="cantidadInput" />
+        <span asp-validation-for="Cantidad" class="text-danger"></span>
+    </div>
+
+    <!-- Total calculado - ENLAZADO AL MODELO -->
+    <div class="form-group">
+        <label asp-for="Total" class="control-label">Total</label>
+        <input asp-for="Total" class="form-control" readonly />
+        <span asp-validation-for="Total" class="text-danger"></span>
+    </div>
+
+    <!-- Fecha -->
+    <div class="form-group">
+        <label asp-for="FechaVenta" class="control-label"></label>
+        <input asp-for="FechaVenta" class="form-control" type="datetime-local" />
+        <span asp-validation-for="FechaVenta" class="text-danger"></span>
+    </div>
+
+    <!-- Usuario (Solo mostrar, no editable) -->
+    <div class="form-group">
+        <label>Usuario (Vendedor)</label>
+        <input class="form-control" type="text" readonly value="@ViewBag.UsuarioNombre" />
+    </div>
+
+    <div class="form-group">
+        <input type="submit" value="Actualizar" class="btn btn-primary" />
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const clientes = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Clientes ?? new List<mvc.Models.Clientes>()));
+        const productos = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Productos ?? new List<mvc.Models.Productos>()));
+
+        const clienteSelect = document.getElementById("clienteSelect");
+        const productoSelect = document.getElementById("productoSelect");
+        const cantidadInput = document.getElementById("cantidadInput");
+        const totalInput = document.querySelector("input[name='Total']");
+
+        let precioUnitario = 0;
+
+        // Mostrar cliente
+        clienteSelect.addEventListener("change", function () {
+            const cliente = clientes.find(c => c.ClienteID == this.value);
+            if (cliente) {
+                document.getElementById("clienteInfo").style.display = "block";
+                document.getElementById("cliId").textContent = cliente.ClienteID;
+                document.getElementById("cliNit").textContent = cliente.Nit;
+                document.getElementById("cliNombre").textContent = cliente.NombreCliente;
+            } else {
+                document.getElementById("clienteInfo").style.display = "none";
+            }
+        });
+
+        // Mostrar producto
+        productoSelect.addEventListener("change", function () {
+            const producto = productos.find(p => p.ProductoID == this.value);
+            if (producto) {
+                document.getElementById("productoInfo").style.display = "block";
+                document.getElementById("prodId").textContent = producto.ProductoID;
+                document.getElementById("prodCodigo").textContent = producto.CodigoProducto;
+                document.getElementById("prodNombre").textContent = producto.NombreProducto;
+                document.getElementById("prodPrecio").textContent = producto.PrecioUnitario;
+                precioUnitario = producto.PrecioUnitario;
+                calcularTotal();
+            } else {
+                document.getElementById("productoInfo").style.display = "none";
+                precioUnitario = 0;
+                calcularTotal();
+            }
+        });
+
+        // Calcular total
+        cantidadInput.addEventListener("input", calcularTotal);
+
+        function calcularTotal() {
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            const total = cantidad * precioUnitario;
+            totalInput.value = total.toFixed(2);
+        }
+
+        // Inicializar datos al cargar la página
+        document.addEventListener("DOMContentLoaded", function () {
+            // Mostrar info del cliente seleccionado
+            if (clienteSelect.value) {
+                clienteSelect.dispatchEvent(new Event('change'));
+            }
+
+            // Mostrar info del producto seleccionado
+            if (productoSelect.value) {
+                productoSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+}

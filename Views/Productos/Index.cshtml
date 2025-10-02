@@ -1,0 +1,82 @@
+﻿@model IEnumerable<mvc.Models.Productos>
+
+@{
+    ViewData["Title"] = "Lista de Productos";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+
+
+<h1>Lista de Productos</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">➕ Nuevo Producto</a>
+</p>
+
+<div class="table-responsive">
+    <table id="tablaProductos" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.ProductoID)</th>
+                <th>@Html.DisplayNameFor(model => model.CodigoProducto)</th>
+                <th>@Html.DisplayNameFor(model => model.NombreProducto)</th>
+                <th>@Html.DisplayNameFor(model => model.EstadoProducto)</th>
+                <th>@Html.DisplayNameFor(model => model.StockActual)</th>
+                <th>@Html.DisplayNameFor(model => model.StockMinimo)</th>
+                <th>@Html.DisplayNameFor(model => model.PrecioUnitario)</th>
+                <th>@Html.DisplayNameFor(model => model.ValorAdquisicion)</th>
+                <th class="text-nowrap">@Html.DisplayNameFor(model => model.FechaAdquisicion)</th>
+                <th>@Html.DisplayNameFor(model => model.Categoria)</th>
+                <th>@Html.DisplayNameFor(model => model.Proveedor)</th>
+                <th class="text-nowrap">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.ProductoID)</td>
+                    <td>@Html.DisplayFor(modelItem => item.CodigoProducto)</td>
+                    <td>@Html.DisplayFor(modelItem => item.NombreProducto)</td>
+                    <td>@Html.DisplayFor(modelItem => item.EstadoProducto)</td>
+                    <td>@Html.DisplayFor(modelItem => item.StockActual)</td>
+                    <td>@Html.DisplayFor(modelItem => item.StockMinimo)</td>
+                    <td>@item.PrecioUnitario.ToString("C")</td>
+                    <td>@item.ValorAdquisicion.ToString("C")</td>
+                    <td class="text-nowrap">@item.FechaAdquisicion.ToString("dd/MM/yyyy")</td>
+                    <td>@Html.DisplayFor(modelItem => item.Categoria.Nombre)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Proveedor.NombreProveedor)</td>
+                    <td class="text-nowrap">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a asp-action="Edit" asp-route-id="@item.ProductoID" class="btn btn-warning">✏ Editar</a>
+                            <a asp-action="Details" asp-route-id="@item.ProductoID" class="btn btn-info">🔍 Detalles</a>
+                            <a asp-action="Delete" asp-route-id="@item.ProductoID" class="btn btn-danger">🗑 Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#tablaProductos').DataTable({
+                "pageLength": 10,
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                "responsive": true // ¡Aquí se activa la magia de la tabla responsiva!
+            });
+        });
+    </script>
+}

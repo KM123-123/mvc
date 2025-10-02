@@ -1,0 +1,49 @@
+﻿@model mvc.Models.Categoria
+@{
+    ViewData["Title"] = "Eliminar Categoría";
+}
+
+<h1>Eliminar Categoría</h1>
+
+<div class="alert alert-warning" role="alert">
+    <h4 class="alert-heading">¿Está seguro que desea eliminar esta categoría?</h4>
+    <p class="mb-0">Esta acción no se puede deshacer.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Información de la Categoría a Eliminar</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3 fw-bold text-muted">
+                        @Html.DisplayNameFor(model => model.Nombre)
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(model => model.Nombre)
+                    </dd>
+                    <dt class="col-sm-3 fw-bold text-muted">
+                        @Html.DisplayNameFor(model => model.Descripcion)
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(model => model.Descripcion)
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer">
+                <form asp-action="Delete" class="d-inline">
+                    <input type="hidden" asp-for="CategoriaID" />
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('¿Está completamente seguro que desea eliminar esta categoría? Esta acción no se puede deshacer.');">
+                        Eliminar
+                    </button>
+                </form>
+                <a asp-action="Index" class="btn btn-secondary ms-2">
+                    Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

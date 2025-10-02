@@ -1,0 +1,54 @@
+﻿@model mvc.Models.Usuario
+@{
+    ViewData["Title"] = "Eliminar Usuario";
+    var roles = ViewBag.Roles as List<string>;
+}
+
+<h2>Eliminar Usuario</h2>
+
+<h3>¿Está seguro de que desea eliminar este usuario?</h3>
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Usuario:</dt>
+        <dd class="col-sm-10">@Model.UserName</dd>
+
+        <dt class="col-sm-2">Nombre Completo:</dt>
+        <dd class="col-sm-10">@Model.FullName</dd>
+
+        <dt class="col-sm-2">Email:</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">Rol(es):</dt>
+        <dd class="col-sm-10">
+            @if (roles != null && roles.Any())
+            {
+                @foreach (var rol in roles)
+                {
+                    <span class="badge bg-info me-1">@rol</span>
+                }
+            }
+            else
+            {
+                <span class="badge bg-secondary">Sin rol asignado</span>
+            }
+        </dd>
+
+        <dt class="col-sm-2">Estado:</dt>
+        <dd class="col-sm-10">
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-success">Activo</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">Inactivo</span>
+            }
+        </dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

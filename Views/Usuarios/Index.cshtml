@@ -1,0 +1,87 @@
+﻿@model IEnumerable<mvc.Models.Usuario>
+@{
+    ViewData["Title"] = "Usuarios";
+    // La lista ahora viene filtrada del controlador
+    var usuariosConRoles = ViewBag.UsuariosConRoles as List<dynamic>;
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+
+<h2>Usuarios</h2>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <a asp-action="Create" class="btn btn-primary">➕ Crear Nuevo Usuario</a>
+    </div>
+</div>
+
+<table id="tablaUsuarios" class="table table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Nombre Completo</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Activo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (usuariosConRoles != null && usuariosConRoles.Any())
+        {
+            @foreach (var item in usuariosConRoles)
+            {
+                <tr>
+                    <td>@item.Usuario.UserName</td>
+                    <td>@item.Usuario.FullName</td>
+                    <td>@item.Usuario.Email</td>
+                    <td>
+                        @if (item.Roles != null && ((IEnumerable<string>)item.Roles).Any())
+                        {
+                            @foreach (var rol in item.Roles)
+                            {
+                                <span class="badge bg-info me-1">@rol</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Sin rol</span>
+                        }
+                    </td>
+                    <td>@(item.Usuario.IsActive ? "Sí" : "No")</td>
+                    <td class="text-nowrap">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a asp-action="Details" asp-route-id="@item.Usuario.Id" class="btn btn-info">🔍 Detalles</a>
+                            <a asp-action="Edit" asp-route-id="@item.Usuario.Id" class="btn btn-warning">✏ Editar</a>
+                            <a asp-action="Delete" asp-route-id="@item.Usuario.Id" class="btn btn-danger">🗑 Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+        @* NOTA: El 'else' para tabla vacía ya no es estrictamente necesario,
+        ya que DataTables muestra su propio mensaje de "No hay datos disponibles en la tabla",
+        pero no causa ningún problema dejarlo. *@
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#tablaUsuarios').DataTable({
+                "pageLength": 10,
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                "responsive": true
+            });
+        });
+    </script>
+}

@@ -1,0 +1,110 @@
+﻿@model mvc.Models.Productos
+@{
+    ViewData["Title"] = "Editar Producto";
+}
+
+<h1>Editar Producto</h1>
+<h4>Productos</h4>
+<hr />
+
+@if (TempData["ModelErrors"] != null)
+{
+    <div class="alert alert-danger">
+        <strong>Errores de validación:</strong> @TempData["ModelErrors"]
+    </div>
+}
+@if (TempData["Exception"] != null)
+{
+    <div class="alert alert-danger">
+        <strong>Excepción:</strong> @TempData["Exception"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @* Este campo oculto es crucial para enviar el ID del producto al controlador *@
+            <input type="hidden" asp-for="ProductoID" />
+
+            <div class="form-group mb-3">
+                <label asp-for="CodigoProducto" class="control-label"></label>
+                <input asp-for="CodigoProducto" class="form-control" />
+                <span asp-validation-for="CodigoProducto" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="NombreProducto" class="control-label"></label>
+                <input asp-for="NombreProducto" class="form-control" />
+                <span asp-validation-for="NombreProducto" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="CategoriaID" class="control-label"></label>
+                <select asp-for="CategoriaID" class="form-control" asp-items="@(ViewData["CategoriaID"] as List<SelectListItem>)">
+                    <option value="">-- Seleccione una categoría --</option>
+                </select>
+                <span asp-validation-for="CategoriaID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ProveedorID" class="control-label"></label>
+                <select asp-for="ProveedorID" class="form-control" asp-items="@(ViewData["ProveedorID"] as List<SelectListItem>)">
+                    <option value="">-- Seleccione un proveedor (opcional) --</option>
+                </select>
+                <span asp-validation-for="ProveedorID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="EstadoProducto" class="control-label"></label>
+                <select asp-for="EstadoProducto" class="form-control">
+                    <option value="true">Activo</option>
+                    <option value="false">Inactivo</option>
+                </select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="StockActual" class="control-label"></label>
+                <input asp-for="StockActual" class="form-control" type="number" min="0" />
+                <span asp-validation-for="StockActual" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="StockMinimo" class="control-label"></label>
+                <input asp-for="StockMinimo" class="form-control" type="number" min="0" />
+                <span asp-validation-for="StockMinimo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="PrecioUnitario" class="control-label"></label>
+                <input asp-for="PrecioUnitario" class="form-control" type="number" step="0.01" min="0.01" />
+                <span asp-validation-for="PrecioUnitario" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ValorAdquisicion" class="control-label"></label>
+                <input asp-for="ValorAdquisicion" class="form-control" type="number" step="0.01" min="0.01" />
+                <span asp-validation-for="ValorAdquisicion" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="FechaAdquisicion" class="control-label"></label>
+                <input asp-for="FechaAdquisicion" class="form-control" type="datetime-local" />
+                <span asp-validation-for="FechaAdquisicion" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Guardar" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Volver a la lista</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

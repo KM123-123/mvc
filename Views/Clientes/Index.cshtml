@@ -1,0 +1,69 @@
+﻿@model IEnumerable<mvc.Models.Clientes>
+
+@{
+    ViewData["Title"] = "Lista de Clientes";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+
+<h1>Lista de Clientes</h1>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <a asp-action="Create" class="btn btn-primary">➕ Nuevo Cliente</a>
+    </div>
+</div>
+
+<table id="tablaClientes" class="table table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.ClienteID)</th>
+            <th>@Html.DisplayNameFor(model => model.Nit)</th>
+            <th>@Html.DisplayNameFor(model => model.NombreCliente)</th>
+            <th>@Html.DisplayNameFor(model => model.Direccion)</th>
+            <th>@Html.DisplayNameFor(model => model.Telefono)</th>
+            <th>@Html.DisplayNameFor(model => model.Correo)</th>
+            <th>@Html.DisplayNameFor(model => model.Estado)</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.ClienteID)</td>
+                <td>@Html.DisplayFor(modelItem => item.Nit)</td>
+                <td>@Html.DisplayFor(modelItem => item.NombreCliente)</td>
+                <td>@Html.DisplayFor(modelItem => item.Direccion)</td>
+                <td>@Html.DisplayFor(modelItem => item.Telefono)</td>
+                <td>@Html.DisplayFor(modelItem => item.Correo)</td>
+                <td>@Html.DisplayFor(modelItem => item.Estado)</td>
+                <td class="text-nowrap">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a asp-action="Edit" asp-route-id="@item.ClienteID" class="btn btn-warning">✏ Editar</a>
+                        <a asp-action="Details" asp-route-id="@item.ClienteID" class="btn btn-info">🔍 Detalles</a>
+                        <a asp-action="Delete" asp-route-id="@item.ClienteID" class="btn btn-danger">🗑 Eliminar</a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#tablaClientes').DataTable({
+                "pageLength": 10, // Mostrar 10 clientes por página
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" // Traducir a español
+                },
+                "responsive": true // Hacer la tabla responsiva
+            });
+        });
+    </script>
+}

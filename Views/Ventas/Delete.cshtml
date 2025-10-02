@@ -1,0 +1,57 @@
+﻿@model mvc.Models.Ventas
+
+@{
+    ViewData["Title"] = "Eliminar Venta";
+}
+
+<h1>Eliminar Venta</h1>
+
+<div class="alert alert-warning">
+    <h4>¿Está seguro que desea eliminar esta venta?</h4>
+    <p>Esta acción no se puede deshacer.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <dl class="row">
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.VentaID)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.VentaID)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Cliente)</dt>
+            <dd class="col-sm-9">@Model.Cliente?.NombreCliente</dd>
+
+            <dt class="col-sm-3">NIT Cliente:</dt>
+            <dd class="col-sm-9">@Model.Cliente?.Nit</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Producto)</dt>
+            <dd class="col-sm-9">@Model.Producto?.NombreProducto</dd>
+
+            <dt class="col-sm-3">Código Producto:</dt>
+            <dd class="col-sm-9">@Model.Producto?.CodigoProducto</dd>
+
+            <dt class="col-sm-3">Precio Unitario:</dt>
+            <dd class="col-sm-9">Q@Model.Producto?.PrecioUnitario</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Cantidad)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Cantidad)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Total)</dt>
+            <dd class="col-sm-9"><strong>Q@Html.DisplayFor(model => model.Total)</strong></dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.FechaVenta)</dt>
+            <dd class="col-sm-9">@Model.FechaVenta.ToString("dd/MM/yyyy hh:mm tt")</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Usuario)</dt>
+            <dd class="col-sm-9">@Model.Usuario?.UserName</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="form-group">
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="VentaID" />
+        <input type="submit" value="Eliminar" class="btn btn-danger"
+               onclick="return confirm('¿Está completamente seguro que desea eliminar esta venta? Esta acción no se puede deshacer.');" />
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

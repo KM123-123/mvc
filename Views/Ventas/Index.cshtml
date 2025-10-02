@@ -1,0 +1,92 @@
+﻿@model IEnumerable<mvc.Models.Ventas>
+
+@{
+    ViewData["Title"] = "Lista de Ventas";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+
+<h1>Lista de Ventas</h1>
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <a asp-action="Create" class="btn btn-primary">➕ Nueva Venta</a>
+        <a asp-action="GenerarExcelVentas" class="btn btn-success">📊 Exportar a Excel</a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success mt-3" role="alert">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Exception"] != null)
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        <strong>Error:</strong> @TempData["Exception"]
+    </div>
+}
+
+<div class="table-responsive">
+    <table id="tablaVentas" class="table table-striped mt-3" style="width:100%">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.VentaID)</th>
+                <th>@Html.DisplayNameFor(model => model.Cliente)</th>
+                <th>@Html.DisplayNameFor(model => model.Producto)</th>
+                <th>@Html.DisplayNameFor(model => model.Cantidad)</th>
+                <th>@Html.DisplayNameFor(model => model.Total)</th>
+                <th class="text-nowrap">@Html.DisplayNameFor(model => model.FechaVenta)</th>
+                <th>@Html.DisplayNameFor(model => model.Usuario)</th>
+                <th class="text-nowrap">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.VentaID)</td>
+                    <td class="text-nowrap">@Html.DisplayFor(modelItem => item.Cliente.NombreCliente)</td>
+                    <td class="text-nowrap">@Html.DisplayFor(modelItem => item.Producto.NombreProducto)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Cantidad)</td>
+                    <td>@item.Total.ToString("C")</td>
+                    <td class="text-nowrap">@item.FechaVenta.ToString("dd/MM/yyyy hh:mm tt")</td>
+                    <td>@Html.DisplayFor(modelItem => item.Usuario.UserName)</td>
+
+                    <td class="text-nowrap">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a asp-action="Edit" asp-route-id="@item.VentaID" class="btn btn-warning">✏ Editar</a>
+                            <a asp-action="Details" asp-route-id="@item.VentaID" class="btn btn-info">🔍 Detalles</a>
+                            <a asp-action="Delete" asp-route-id="@item.VentaID" class="btn btn-danger">🗑 Eliminar</a>
+                            <a asp-action="GenerarPdfVenta" asp-route-id="@item.VentaID" class="btn btn-dark" target="_blank">📄 PDF</a>
+                            <a asp-action="GenerarExcelVentaIndividual" asp-route-id="@item.VentaID" class="btn btn-success">📊 Excel</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#tablaVentas').DataTable({
+                "pageLength": 10,
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                "responsive": true,
+                "order": [[0, "desc"]]
+            });
+        });
+    </script>
+}

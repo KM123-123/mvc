@@ -1,0 +1,70 @@
+﻿@model IEnumerable<mvc.Models.Proveedores>
+
+@{
+    ViewData["Title"] = "Lista de Proveedores";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+
+<h1>Lista de Proveedores</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">➕ Nuevo Proveedor</a>
+</p>
+
+<table id="tablaProveedores" class="table table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.ProveedorID)</th>
+            <th>@Html.DisplayNameFor(model => model.NombreProveedor)</th>
+            <th>@Html.DisplayNameFor(model => model.CodigoInterno)</th>
+            <th>@Html.DisplayNameFor(model => model.Descripcion)</th>
+            <th>@Html.DisplayNameFor(model => model.Direccion)</th>
+            <th>@Html.DisplayNameFor(model => model.Telefono)</th>
+            <th>@Html.DisplayNameFor(model => model.Estado)</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.ProveedorID)</td>
+                <td>@Html.DisplayFor(modelItem => item.NombreProveedor)</td>
+                <td>@Html.DisplayFor(modelItem => item.CodigoInterno)</td>
+                <td>@Html.DisplayFor(modelItem => item.Descripcion)</td>
+                <td>@Html.DisplayFor(modelItem => item.Direccion)</td>
+                <td>@Html.DisplayFor(modelItem => item.Telefono)</td>
+                <td>@Html.DisplayFor(modelItem => item.Estado)</td>
+                <td style="white-space: nowrap;">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a asp-action="Edit" asp-route-id="@item.ProveedorID" class="btn btn-warning">✏ Editar</a>
+                        <a asp-action="Details" asp-route-id="@item.ProveedorID" class="btn btn-info">🔍 Detalles</a>
+                        <a asp-action="Delete" asp-route-id="@item.ProveedorID" class="btn btn-danger">🗑 Eliminar</a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#tablaProveedores').DataTable({
+                "pageLength": 10,
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                "responsive": true
+            });
+        });
+    </script>
+}

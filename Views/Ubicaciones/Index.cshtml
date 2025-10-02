@@ -1,0 +1,31 @@
+﻿@model IEnumerable<mvc.Models.Ubicaciones>
+@{
+    ViewData["Title"] = "Lista de Ubicaciones";
+}
+<h1>Lista de Ubicaciones</h1>
+<p>
+    <a asp-action="Create" class="btn btn-primary">Nueva Ubicación</a>
+</p>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.NombreUbicacion)</th>
+            <th>@Html.DisplayNameFor(model => model.Descripcion)</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.NombreUbicacion)</td>
+                <td>@Html.DisplayFor(modelItem => item.Descripcion)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.UbicacionID" class="btn btn-sm btn-warning">Editar</a> |
+                    <a asp-action="Details" asp-route-id="@item.UbicacionID" class="btn btn-sm btn-info">Detalles</a> |
+                    <a asp-action="Delete" asp-route-id="@item.UbicacionID" class="btn btn-sm btn-danger">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
