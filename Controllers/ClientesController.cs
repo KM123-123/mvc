@@ -91,9 +91,21 @@ namespace mvc.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(clientes);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                // ---> INICIO: VALIDACIÓN DE NIT DUPLICADO <---
+                bool nitExiste = await _context.Clientes.AnyAsync(c => c.Nit == clientes.Nit);
+                if (nitExiste)
+                {
+                    ModelState.AddModelError("Nit", "Este NIT ya se encuentra registrado.");
+                }
+                // ---> FIN: VALIDACIÓN DE NIT DUPLICADO <---
+
+                // Si el modelo sigue siendo válido después de nuestra comprobación, guardamos.
+                if (ModelState.IsValid)
+                {
+                    _context.Add(clientes);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
             }
             return View(clientes);
         }
@@ -114,7 +126,7 @@ namespace mvc.Controllers
             return View(clientes);
         }
 
-        // POST: Clientes/Edit/5
+        /// POST: Clientes/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
@@ -128,23 +140,35 @@ namespace mvc.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                // ---> INICIO: VALIDACIÓN DE NIT DUPLICADO AL EDITAR <---
+                bool nitExiste = await _context.Clientes.AnyAsync(c => c.Nit == clientes.Nit && c.ClienteID != id);
+                if (nitExiste)
                 {
-                    _context.Update(clientes);
-                    await _context.SaveChangesAsync();
+                    ModelState.AddModelError("Nit", "Este NIT ya pertenece a otro cliente.");
                 }
-                catch (DbUpdateConcurrencyException)
+                // ---> FIN: VALIDACIÓN DE NIT DUPLICADO AL EDITAR <---
+
+                // Si el modelo sigue siendo válido, procedemos a actualizar.
+                if (ModelState.IsValid)
                 {
-                    if (!ClientesExists(clientes.ClienteID))
+                    try
                     {
-                        return NotFound();
+                        _context.Update(clientes);
+                        await _context.SaveChangesAsync();
                     }
-                    else
+                    catch (DbUpdateConcurrencyException)
                     {
-                        throw;
+                        if (!ClientesExists(clientes.ClienteID))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
             }
             return View(clientes);
         }

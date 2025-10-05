@@ -88,42 +88,55 @@ namespace mvc.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Verificar que el rol seleccionado existe
-                if (!string.IsNullOrEmpty(rolSeleccionado))
+                // ---> INICIO: VALIDACIÓN DE USUARIO DUPLICADO <---
+                // Usamos UserManager para verificar si el nombre de usuario ya existe.
+                var existingUser = await _userManager.FindByNameAsync(model.UserName);
+                if (existingUser != null)
                 {
-                    var roleExists = await _roleManager.RoleExistsAsync(rolSeleccionado);
-                    if (!roleExists)
-                    {
-                        ModelState.AddModelError("", "El rol seleccionado no es válido.");
-                        await CargarRolesEnViewBag(rolSeleccionado);
-                        return View(model);
-                    }
+                    ModelState.AddModelError("UserName", "Este nombre de usuario ya está en uso.");
                 }
+                // ---> FIN: VALIDACIÓN DE USUARIO DUPLICADO <---
 
-                var user = new Usuario
+                // Si después de nuestra validación, el ModelState sigue siendo válido, continuamos.
+                if (ModelState.IsValid)
                 {
-                    UserName = model.UserName,
-                    Email = model.Email,
-                    FullName = model.FullName,
-                    Position = rolSeleccionado, // Guardamos el rol en Position para compatibilidad
-                    IsActive = model.IsActive
-                };
-
-                var result = await _userManager.CreateAsync(user, password);
-
-                if (result.Succeeded)
-                {
-                    // Asignar el rol al usuario si se seleccionó uno
+                    // Verificar que el rol seleccionado existe
                     if (!string.IsNullOrEmpty(rolSeleccionado))
                     {
-                        await _userManager.AddToRoleAsync(user, rolSeleccionado);
+                        var roleExists = await _roleManager.RoleExistsAsync(rolSeleccionado);
+                        if (!roleExists)
+                        {
+                            ModelState.AddModelError("", "El rol seleccionado no es válido.");
+                            await CargarRolesEnViewBag(rolSeleccionado);
+                            return View(model);
+                        }
                     }
 
-                    return RedirectToAction(nameof(Index));
-                }
+                    var user = new Usuario
+                    {
+                        UserName = model.UserName,
+                        Email = model.Email,
+                        FullName = model.FullName,
+                        Position = rolSeleccionado, // Guardamos el rol en Position para compatibilidad
+                        IsActive = model.IsActive
+                    };
 
-                foreach (var error in result.Errors)
-                    ModelState.AddModelError("", error.Description);
+                    var result = await _userManager.CreateAsync(user, password);
+
+                    if (result.Succeeded)
+                    {
+                        // Asignar el rol al usuario si se seleccionó uno
+                        if (!string.IsNullOrEmpty(rolSeleccionado))
+                        {
+                            await _userManager.AddToRoleAsync(user, rolSeleccionado);
+                        }
+
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    foreach (var error in result.Errors)
+                        ModelState.AddModelError("", error.Description);
+                }
             }
 
             await CargarRolesEnViewBag(rolSeleccionado);

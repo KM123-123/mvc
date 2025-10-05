@@ -91,10 +91,38 @@ namespace mvc.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(proveedores);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                // V_AQUÍ_LA_VALIDACIÓN_PARA_EVITAR_DUPLICADOS
+
+                // 1. Verificar si el Nombre del Proveedor ya existe (ignorando mayúsculas/minúsculas)
+                bool nombreExiste = await _context.Proveedores
+                    .AnyAsync(p => p.NombreProveedor.ToLower() == proveedores.NombreProveedor.ToLower());
+
+                if (nombreExiste)
+                {
+                    // Agrega un error específico para el campo NombreProveedor
+                    ModelState.AddModelError("NombreProveedor", "Este nombre de proveedor ya existe.");
+                }
+
+                // 2. Verificar si el Código Interno ya existe (ignorando mayúsculas/minúsculas)
+                bool codigoExiste = await _context.Proveedores
+                    .AnyAsync(p => p.CodigoInterno.ToLower() == proveedores.CodigoInterno.ToLower());
+
+                if (codigoExiste)
+                {
+                    // Agrega un error específico para el campo CodigoInterno
+                    ModelState.AddModelError("CodigoInterno", "Este código interno ya está en uso.");
+                }
+
+                // 3. Si después de nuestras validaciones, el ModelState sigue siendo válido, guardamos.
+                if (ModelState.IsValid)
+                {
+                    _context.Add(proveedores);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
             }
+            // Si el modelo no es válido (ya sea por las validaciones automáticas o las nuestras),
+            // se devuelve la vista con los datos ingresados y los mensajes de error.
             return View(proveedores);
         }
 
@@ -128,23 +156,45 @@ namespace mvc.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                // V_AQUÍ_LA_VALIDACIÓN_PARA_EVITAR_DUPLICADOS_AL_EDITAR
+
+                // Verificar si el Nombre del Proveedor ya existe EN OTRO registro
+                bool nombreExiste = await _context.Proveedores
+                    .AnyAsync(p => p.NombreProveedor.ToLower() == proveedores.NombreProveedor.ToLower() && p.ProveedorID != id);
+                if (nombreExiste)
                 {
-                    _context.Update(proveedores);
-                    await _context.SaveChangesAsync();
+                    ModelState.AddModelError("NombreProveedor", "Este nombre de proveedor ya existe.");
                 }
-                catch (DbUpdateConcurrencyException)
+
+                // Verificar si el Código Interno ya existe EN OTRO registro
+                bool codigoExiste = await _context.Proveedores
+                    .AnyAsync(p => p.CodigoInterno.ToLower() == proveedores.CodigoInterno.ToLower() && p.ProveedorID != id);
+                if (codigoExiste)
                 {
-                    if (!ProveedoresExists(proveedores.ProveedorID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    ModelState.AddModelError("CodigoInterno", "Este código interno ya está en uso.");
                 }
-                return RedirectToAction(nameof(Index));
+
+                // Si el modelo sigue siendo válido, procedemos a actualizar
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        _context.Update(proveedores);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!ProveedoresExists(proveedores.ProveedorID))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
             }
             return View(proveedores);
         }

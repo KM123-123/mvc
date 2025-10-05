@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Sistema de Inventario";
+    ViewData["Title"] = "Sistema de Ventas";
 }
 
 <style>
@@ -8,18 +8,22 @@
         background-size: cover;
         background-position: center;
         min-height: 80vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: flex; /* Corrección: Se usa 'flex' */
+        justify-content: center; /* Esto centra el texto horizontalmente */
         color: white;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
         margin: -1.5rem -15px 0 -15px;
+        /* --- CAMBIOS AQUÍ --- */
+        /* Quitamos el centrado vertical perfecto */
+        /* align-items: center; */
+        /* Y lo empujamos desde arriba a la posición deseada */
+        padding-top: 20vh;
     }
 </style>
 
 <div class="hero-section">
     <div class="text-center">
         <h1 class="display-4">Bienvenido</h1>
-        <p class="lead">Gestiona tu inventario de manera eficiente y profesional</p>
+        <p class="lead">Gestiona tus ventas de manera eficiente y profesional</p>
     </div>
 </div>

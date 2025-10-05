@@ -103,6 +103,17 @@ namespace mvc.Controllers
                 ModelState.AddModelError("CategoriaID", "Debe seleccionar una categoría válida");
             }
 
+            // ---> INICIO: VALIDACIÓN DE CÓDIGO DUPLICADO <---
+            // Verificar si el CodigoProducto ya existe (ignorando mayúsculas/minúsculas)
+            bool codigoExiste = await _context.Productos
+                .AnyAsync(p => p.CodigoProducto.ToLower() == productos.CodigoProducto.ToLower());
+
+            if (codigoExiste)
+            {
+                ModelState.AddModelError("CodigoProducto", "Este código de producto ya existe.");
+            }
+            // ---> FIN: VALIDACIÓN DE CÓDIGO DUPLICADO <---
+
             // Si ModelState no es válido, recolecto mensajes y regreso la vista
             if (!ModelState.IsValid)
             {
@@ -192,6 +203,17 @@ namespace mvc.Controllers
             {
                 ModelState.AddModelError("CategoriaID", "Debe seleccionar una categoría válida");
             }
+
+            // ---> INICIO: VALIDACIÓN DE CÓDIGO DUPLICADO AL EDITAR <---
+            // Verificar si el CodigoProducto ya existe en OTRO producto
+            bool codigoExiste = await _context.Productos
+                .AnyAsync(p => p.CodigoProducto.ToLower() == productos.CodigoProducto.ToLower() && p.ProductoID != id);
+
+            if (codigoExiste)
+            {
+                ModelState.AddModelError("CodigoProducto", "Este código de producto ya está en uso por otro producto.");
+            }
+            // ---> FIN: VALIDACIÓN DE CÓDIGO DUPLICADO AL EDITAR <---
 
             // Si ModelState no es válido, recolecto mensajes y regreso la vista
             if (!ModelState.IsValid)

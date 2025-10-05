@@ -82,10 +82,27 @@ namespace mvc.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(categoria);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                // V_AQUÍ_LA_VALIDACIÓN_PARA_EVITAR_DUPLICADOS
+
+                // Verificar si el Nombre de la categoría ya existe (ignorando mayúsculas/minúsculas)
+                bool nombreExiste = await _context.Categoria
+                    .AnyAsync(c => c.Nombre.ToLower() == categoria.Nombre.ToLower());
+
+                if (nombreExiste)
+                {
+                    // Agrega un error específico para el campo Nombre
+                    ModelState.AddModelError("Nombre", "El nombre de esta categoría ya existe.");
+                }
+
+                // Si después de nuestra validación, el ModelState sigue siendo válido, guardamos.
+                if (ModelState.IsValid)
+                {
+                    _context.Add(categoria);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
             }
+            // Si el modelo no es válido, se devuelve la vista con los datos y errores.
             return View(categoria);
         }
 
@@ -119,23 +136,38 @@ namespace mvc.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                // V_AQUÍ_LA_VALIDACIÓN_AL_EDITAR
+
+                // Verificar si el Nombre ya existe EN OTRA categoría diferente a la que estamos editando
+                bool nombreExiste = await _context.Categoria
+                    .AnyAsync(c => c.Nombre.ToLower() == categoria.Nombre.ToLower() && c.CategoriaID != id);
+
+                if (nombreExiste)
                 {
-                    _context.Update(categoria);
-                    await _context.SaveChangesAsync();
+                    ModelState.AddModelError("Nombre", "El nombre de esta categoría ya está en uso por otra categoría.");
                 }
-                catch (DbUpdateConcurrencyException)
+
+                // Si el modelo sigue siendo válido, procedemos a actualizar
+                if (ModelState.IsValid)
                 {
-                    if (!CategoriaExists(categoria.CategoriaID))
+                    try
                     {
-                        return NotFound();
+                        _context.Update(categoria);
+                        await _context.SaveChangesAsync();
                     }
-                    else
+                    catch (DbUpdateConcurrencyException)
                     {
-                        throw;
+                        if (!CategoriaExists(categoria.CategoriaID))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
             }
             return View(categoria);
         }

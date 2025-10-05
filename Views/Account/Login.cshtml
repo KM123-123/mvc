@@ -1,43 +1,118 @@
 ﻿@model mvc.ViewModels.LoginViewModel
 @{
     ViewData["Title"] = "Iniciar Sesión";
+    Layout = "_Layout"; // Volvemos a usar la plantilla principal
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-header text-center">
-                <h3>Sistema de Inventario</h3>
-                <p class="text-muted">Iniciar Sesión</p>
+<style>
+    .login-container {
+        height: 100%; /* La clave está aquí: ocupa el 100% del espacio disponible, no de toda la ventana */
+        width: 100%;
+    }
+
+    .login-branding-bg {
+        background: linear-gradient(135deg, #005662, #002D3A);
+        color: white;
+        padding: 4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .login-form-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        background-color: #ffffff;
+    }
+
+    .form-wrapper {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .btn-pearson-primary {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #212529;
+        font-weight: bold;
+    }
+
+    .btn-pearson-secondary {
+        background-color: #00778a;
+        border-color: #00778a;
+        color: #ffffff;
+        font-weight: bold;
+    }
+
+    /* Estilos para agrandar el formulario */
+    .login-form-container h2 {
+        font-size: 2.25rem;
+    }
+
+    .login-form-container .form-label, .login-form-container .form-control {
+        font-size: 1.1rem;
+    }
+
+    .login-form-container .form-control {
+        padding: 0.75rem 1rem;
+    }
+
+    .login-form-container .form-check-label {
+        font-size: 1.05rem;
+        padding-left: 0.5rem;
+    }
+
+    .login-form-container .form-check-input {
+        width: 1.25em;
+        height: 1.25em;
+        margin-top: 0.2em;
+    }
+
+    .login-form-container p {
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="container-fluid p-0 login-container">
+    <div class="row g-0 h-100">
+        <div class="col-lg-7 d-none d-lg-flex login-branding-bg">
+            <div>
+                <h1 class="display-4">Sistema de Ventas</h1>
+                <p class="lead">Bienvenido. Inicia sesión para administrar tus ventas.</p>
             </div>
-            <div class="card-body">
+        </div>
+        <div class="col-lg-5 col-md-12 login-form-container">
+            <div class="form-wrapper">
+                <h2 class="mb-4">Iniciar sesión</h2>
                 <form asp-action="Login" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
                     <div class="mb-3">
-                        <label asp-for="Email" class="form-label"></label>
+                        <label asp-for="Email" class="form-label">Correo Electrónico</label>
                         <input asp-for="Email" class="form-control" placeholder="correo@ejemplo.com" />
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
-
                     <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
+                        <label asp-for="Password" class="form-label">Contraseña</label>
                         <input asp-for="Password" class="form-control" placeholder="••••••••" />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
-
                     <div class="mb-3 form-check">
                         <input asp-for="RememberMe" type="checkbox" class="form-check-input" />
                         <label asp-for="RememberMe" class="form-check-label"></label>
                     </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-pearson-primary btn-lg">Iniciar Sesión</button>
                     </div>
                 </form>
-            </div>
-            <div class="card-footer text-center">
-                <p>¿No tienes cuenta? <a asp-action="Register">Registrarse</a></p>
+                <hr class="my-4">
+                <div class="text-center">
+                    <p class="mb-2">¿Es nuevo en el sistema?</p>
+                    <div class="d-grid">
+                        <a asp-action="Register" class="btn btn-pearson-secondary btn-lg">Crear una cuenta</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -29,20 +29,20 @@ namespace mvc.Documents
                 worksheet.Cell("A3").Value = "NIT: 57463-5";
 
                 // Datos de la factura (derecha)
-                var facturaCell = worksheet.Cell("E1");
+                var facturaCell = worksheet.Cell("C1");
                 facturaCell.Value = "FACTURA";
                 facturaCell.Style.Font.Bold = true;
                 facturaCell.Style.Font.FontSize = 20;
                 facturaCell.Style.Font.FontColor = XLColor.FromHtml("#00529B"); // Color azul
 
-                worksheet.Cell("D3").Value = "N° FACTURA";
-                worksheet.Cell("E3").Value = _venta.VentaID;
-                worksheet.Cell("D4").Value = "FECHA";
-                worksheet.Cell("E4").Value = _venta.FechaVenta.ToString("dd/M/yyyy");
-                worksheet.Cell("D5").Value = "VENCIMIENTO";
-                worksheet.Cell("E5").Value = _venta.FechaVenta.AddDays(90).ToString("dd/M/yyyy");
-                worksheet.Range("D3:D5").Style.Font.Bold = true;
-                worksheet.Range("E3:E5").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                worksheet.Cell("B3").Value = "N° FACTURA";
+                worksheet.Cell("C3").Value = _venta.VentaID;
+                worksheet.Cell("B4").Value = "FECHA";
+                worksheet.Cell("C4").Value = _venta.FechaVenta.ToString("dd/M/yyyy");
+                worksheet.Cell("B5").Value = "VENCIMIENTO";
+                worksheet.Cell("C5").Value = _venta.FechaVenta.AddDays(90).ToString("dd/M/yyyy");
+                worksheet.Range("B3:B5").Style.Font.Bold = true;
+                worksheet.Range("C3:C5").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
 
 
                 // --- 2. DATOS DEL CLIENTE ---
