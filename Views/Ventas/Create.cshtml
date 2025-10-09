@@ -10,7 +10,6 @@
 {
     <div class="alert alert-success">@TempData["Success"]</div>
 }
-
 @if (TempData["ModelErrors"] != null)
 {
     <div class="alert alert-danger">
@@ -18,7 +17,6 @@
         <p>@TempData["ModelErrors"]</p>
     </div>
 }
-
 @if (TempData["Exception"] != null)
 {
     <div class="alert alert-danger">
@@ -27,8 +25,7 @@
 }
 
 <form asp-action="Create" method="post">
-    <!-- Cliente -->
-    <div class="form-group">
+    <div class="form-group mb-3">
         <label asp-for="ClienteID" class="control-label"></label>
         <select asp-for="ClienteID" class="form-control" asp-items="ViewBag.ClienteID" id="clienteSelect">
             <option value="">-- Seleccionar Cliente --</option>
@@ -36,7 +33,6 @@
         <span asp-validation-for="ClienteID" class="text-danger"></span>
     </div>
 
-    <!-- Info del cliente -->
     <div id="clienteInfo" style="margin-top:10px; display:none;">
         <strong>Detalles del cliente:</strong>
         <p><b>ID:</b> <span id="cliId"></span></p>
@@ -44,16 +40,13 @@
         <p><b>Nombre:</b> <span id="cliNombre"></span></p>
     </div>
 
-    <!-- Producto -->
-    <div class="form-group">
-        <label asp-for="ProductoID" class="control-label"></label>
-        <select asp-for="ProductoID" class="form-control" asp-items="ViewBag.ProductoID" id="productoSelect">
+    <div class="form-group mb-3">
+        <label for="ProductoID" class="control-label">Producto</label>
+        <select name="ProductoID" id="productoSelect" class="form-control" asp-items="ViewBag.ProductoID">
             <option value="">-- Seleccionar Producto --</option>
         </select>
-        <span asp-validation-for="ProductoID" class="text-danger"></span>
     </div>
 
-    <!-- Info del producto -->
     <div id="productoInfo" style="margin-top:10px; display:none;">
         <strong>Detalles del producto:</strong>
         <p><b>ID:</b> <span id="prodId"></span></p>
@@ -62,31 +55,27 @@
         <p><b>Precio Unitario:</b> Q<span id="prodPrecio"></span></p>
     </div>
 
-    <!-- Cantidad -->
-    <div class="form-group">
+    <div class="form-group mb-3">
         <label asp-for="Cantidad" class="control-label"></label>
         <input asp-for="Cantidad" class="form-control" id="cantidadInput" />
         <span asp-validation-for="Cantidad" class="text-danger"></span>
     </div>
 
-    <!-- Total calculado - ENLAZADO AL MODELO -->
-    <div class="form-group">
+    <div class="form-group mb-3">
         <label asp-for="Total" class="control-label">Total</label>
         <input asp-for="Total" class="form-control" readonly />
         <span asp-validation-for="Total" class="text-danger"></span>
     </div>
 
-    <!-- Fecha -->
-    <div class="form-group">
+    <div class="form-group mb-3">
         <label>Fecha de la Venta</label>
         <input class="form-control" type="text" readonly
                value="@(ViewBag.FechaVenta != null
-                       ? ((DateTime)ViewBag.FechaVenta).ToString("dd/MM/yyyy hh:mm tt")
-                       : DateTime.Now.ToString("dd/MM/yyyy hh:mm tt"))" />
+                        ? ((DateTime)ViewBag.FechaVenta).ToString("dd/MM/yyyy hh:mm tt")
+                        : DateTime.Now.ToString("dd/MM/yyyy hh:mm tt"))" />
     </div>
 
-    <!-- Usuario -->
-    <div class="form-group">
+    <div class="form-group mb-3">
         <label>Usuario (Vendedor)</label>
         <input class="form-control" type="text" readonly value="@ViewBag.UsuarioNombre" />
     </div>
@@ -103,54 +92,73 @@
     }
 
     <script>
-        const clientes = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Clientes ?? new List<mvc.Models.Clientes>()));
-        const productos = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Productos ?? new List<mvc.Models.Productos>()));
+        $(document).ready(function () {
+            // Inicializa Select2 en ambos dropdowns
+            $('#clienteSelect').select2({
+                placeholder: "-- Seleccionar Cliente --",
+                allowClear: true
+            });
+            $('#productoSelect').select2({
+                placeholder: "-- Seleccionar Producto --",
+                allowClear: true
+            });
 
-        const clienteSelect = document.getElementById("clienteSelect");
-        const productoSelect = document.getElementById("productoSelect");
-        const cantidadInput = document.getElementById("cantidadInput");
-        const totalInput = document.querySelector("input[name='Total']"); // Enlazado al modelo
+            // Serializa los datos desde el ViewBag (igual que antes)
+            const clientes = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Clientes ?? new List<mvc.Models.Clientes>()));
+            const productos = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Productos ?? new List<mvc.Models.Productos>()));
 
-        let precioUnitario = 0;
+            // Referencias a los inputs (usando jQuery)
+            const cantidadInput = $("#cantidadInput");
+            const totalInput = $("input[name='Total']");
+            let precioUnitario = 0;
 
-        // Mostrar cliente
-        clienteSelect.addEventListener("change", function () {
-            const cliente = clientes.find(c => c.ClienteID == this.value);
-            if (cliente) {
-                document.getElementById("clienteInfo").style.display = "block";
-                document.getElementById("cliId").textContent = cliente.ClienteID;
-                document.getElementById("cliNit").textContent = cliente.Nit;
-                document.getElementById("cliNombre").textContent = cliente.NombreCliente;
-            } else {
-                document.getElementById("clienteInfo").style.display = "none";
-            }
-        });
+            // Evento cuando se SELECCIONA un cliente
+            $('#clienteSelect').on('select2:select', function (e) {
+                const clienteId = e.params.data.id;
+                const cliente = clientes.find(c => c.ClienteID == clienteId);
+                if (cliente) {
+                    $('#clienteInfo').show();
+                    $("#cliId").text(cliente.ClienteID);
+                    $("#cliNit").text(cliente.Nit);
+                    $("#cliNombre").text(cliente.NombreCliente);
+                }
+            });
 
-        // Mostrar producto
-        productoSelect.addEventListener("change", function () {
-            const producto = productos.find(p => p.ProductoID == this.value);
-            if (producto) {
-                document.getElementById("productoInfo").style.display = "block";
-                document.getElementById("prodId").textContent = producto.ProductoID;
-                document.getElementById("prodCodigo").textContent = producto.CodigoProducto;
-                document.getElementById("prodNombre").textContent = producto.NombreProducto;
-                document.getElementById("prodPrecio").textContent = producto.PrecioUnitario;
-                precioUnitario = producto.PrecioUnitario;
-                calcularTotal();
-            } else {
-                document.getElementById("productoInfo").style.display = "none";
+            // Evento cuando se DESELECCIONA un cliente (se limpia)
+            $('#clienteSelect').on('select2:unselect', function (e) {
+                $('#clienteInfo').hide();
+            });
+
+            // Evento cuando se SELECCIONA un producto
+            $('#productoSelect').on('select2:select', function (e) {
+                const productoId = e.params.data.id;
+                const producto = productos.find(p => p.ProductoID == productoId);
+                if (producto) {
+                    $('#productoInfo').show();
+                    $("#prodId").text(producto.ProductoID);
+                    $("#prodCodigo").text(producto.CodigoProducto);
+                    $("#prodNombre").text(producto.NombreProducto);
+                    $("#prodPrecio").text(producto.PrecioUnitario.toFixed(2));
+                    precioUnitario = producto.PrecioUnitario;
+                    calcularTotal();
+                }
+            });
+
+            // Evento cuando se DESELECCIONA un producto
+            $('#productoSelect').on('select2:unselect', function (e) {
+                $('#productoInfo').hide();
                 precioUnitario = 0;
                 calcularTotal();
+            });
+
+            // Calcular total al cambiar la cantidad
+            cantidadInput.on("input", calcularTotal);
+
+            function calcularTotal() {
+                const cantidad = parseFloat(cantidadInput.val()) || 0;
+                const total = cantidad * precioUnitario;
+                totalInput.val(total.toFixed(2));
             }
         });
-
-        // Calcular total
-        cantidadInput.addEventListener("input", calcularTotal);
-
-        function calcularTotal() {
-            const cantidad = parseFloat(cantidadInput.value) || 0;
-            const total = cantidad * precioUnitario;
-            totalInput.value = total.toFixed(2); // Actualiza el campo enlazado al modelo
-        }
     </script>
 }

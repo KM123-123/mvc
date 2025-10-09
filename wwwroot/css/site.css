@@ -1,22 +1,58 @@
-html {
-  font-size: 14px;
+/* --- NUEVO BLOQUE --- */
+/* Controla el tamaño base y elimina el scroll horizontal del cuerpo de la página */
+html, body {
+    height: 100%;
+    overflow-x: hidden;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* Estilos para el layout con Sidebar */
+
+/* Contenedor principal que usa Flexbox para alinear el sidebar y el contenido */
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: #343a40;
+    color: #fff;
+    transition: all 0.3s;
+    min-height: calc(100vh - 56px);
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+    /* Estilo para los elementos del menú en el sidebar */
+    #sidebar .nav-item .nav-link {
+        padding: 10px 15px;
+        font-size: 1.1em;
+        display: block;
+        color: rgba(255, 255, 255, 0.7);
+        text-align: center;
+    }
+
+        /* Color del enlace al pasar el mouse por encima */
+        #sidebar .nav-item .nav-link:hover {
+            color: #fff;
+            background: #495057;
+        }
+
+/* --- BLOQUE MODIFICADO --- */
+/* Contenedor para el contenido principal */
+#content {
+    padding: 20px;
+    min-height: calc(100vh - 56px);
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    /* --- LÍNEAS CLAVE PARA CONTROLAR EL SCROLL --- */
+    flex-grow: 1; /* Hace que el contenido ocupe el espacio horizontal restante */
+    min-width: 0; /* Evita que el contenido muy ancho rompa el layout */
+    overflow-y: auto; /* La barra de scroll VERTICAL solo aparecerá AQUÍ si es necesario */
 }
 
-body {
-  margin-bottom: 60px;
-}
+    /* Le dice al contenido principal que ocupe todo el espacio sobrante */
+    #content main {
+        flex-grow: 1;
+    }

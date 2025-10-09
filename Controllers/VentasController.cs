@@ -416,29 +416,26 @@ namespace mvc.Controllers
             ViewBag.FechaVenta = venta?.FechaVenta != default ? venta.FechaVenta : DateTime.Now;
 
             ViewBag.ClienteID = new SelectList(
-                    _context.Clientes
+                _context.Clientes
+                        .Where(c => c.Estado == "Activo") // <-- CORREGIDO
                         .Select(c => new {
                             ClienteID = c.ClienteID,
                             Nombre = c.Nit + " - " + c.NombreCliente
                         }),
-                    "ClienteID",
-                    "Nombre",
-                    venta?.ClienteID
-                );
-            ViewBag.ProductoID = new SelectList(
-                        _context.Productos
-                            .Select(p => new {
-                                ProductoID = p.ProductoID,
-                                Nombre = p.CodigoProducto + " - " + p.NombreProducto + " - (Q" + p.PrecioUnitario + ")"
-                            }),
-                        "ProductoID",
-                        "Nombre",
-                        venta?.ProductoID
-                    );
+                "ClienteID", "Nombre", venta?.ClienteID);
 
-            // ✅ Pasamos los objetos completos a la vista para mostrar detalles
-            ViewBag.Clientes = _context.Clientes.ToList();
-            ViewBag.Productos = _context.Productos.ToList();
+            ViewBag.ProductoID = new SelectList(
+                _context.Productos
+                        .Where(p => p.EstadoProducto) // <-- CORREGIDO
+                        .Select(p => new {
+                            ProductoID = p.ProductoID,
+                            Nombre = p.CodigoProducto + " - " + p.NombreProducto + " - (Q" + p.PrecioUnitario + ")"
+                        }),
+                "ProductoID", "Nombre", venta?.ProductoID);
+
+            // También filtramos los objetos completos que van al JavaScript
+            ViewBag.Clientes = await _context.Clientes.Where(c => c.Estado == "Activo").ToListAsync(); // <-- CORREGIDO
+            ViewBag.Productos = await _context.Productos.Where(p => p.EstadoProducto).ToListAsync(); // <-- CORREGIDO
         }
     }
 }

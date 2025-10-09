@@ -26,27 +26,49 @@
     </div>
 }
 
-<div class="row">
-    <div class="col-md-8">
-        <form asp-action="Create" method="post">
-            @Html.AntiForgeryToken()
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+    <div class="row">
+        <div class="col-md-6">
             <div class="form-group mb-3">
                 <label asp-for="CodigoProducto" class="control-label"></label>
                 <input asp-for="CodigoProducto" class="form-control" />
                 <span asp-validation-for="CodigoProducto" class="text-danger"></span>
             </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label asp-for="StockActual" class="control-label"></label>
+                <input asp-for="StockActual" class="form-control" type="number" min="0" value="0" />
+                <span asp-validation-for="StockActual" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="col-md-6">
             <div class="form-group mb-3">
                 <label asp-for="NombreProducto" class="control-label"></label>
                 <input asp-for="NombreProducto" class="form-control" />
                 <span asp-validation-for="NombreProducto" class="text-danger"></span>
             </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label asp-for="StockMinimo" class="control-label"></label>
+                <input asp-for="StockMinimo" class="form-control" type="number" min="0" value="0" />
+                <span asp-validation-for="StockMinimo" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="col-md-6">
             <div class="form-group mb-3">
                 <label asp-for="CategoriaID" class="control-label"></label>
-                <select asp-for="CategoriaID" class="form-control">
+                <select id="categoriaSelect" asp-for="CategoriaID" class="form-control">
                     <option value="0">-- Seleccione una categoría --</option>
                     @if (ViewData["CategoriaID"] is List<SelectListItem> categorias)
                     {
@@ -58,10 +80,21 @@
                 </select>
                 <span asp-validation-for="CategoriaID" class="text-danger"></span>
             </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label asp-for="PrecioUnitario" class="control-label"></label>
+                <input asp-for="PrecioUnitario" class="form-control" type="number" step="0.01" min="0.01" />
+                <span asp-validation-for="PrecioUnitario" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="col-md-6">
             <div class="form-group mb-3">
                 <label asp-for="ProveedorID" class="control-label"></label>
-                <select asp-for="ProveedorID" class="form-control">
+                <select id="proveedorSelect" asp-for="ProveedorID" class="form-control">
                     <option value="">-- Seleccione un proveedor (opcional) --</option>
                     @if (ViewData["ProveedorID"] is List<SelectListItem> proveedores)
                     {
@@ -73,7 +106,18 @@
                 </select>
                 <span asp-validation-for="ProveedorID" class="text-danger"></span>
             </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label asp-for="ValorAdquisicion" class="control-label"></label>
+                <input asp-for="ValorAdquisicion" class="form-control" type="number" step="0.01" min="0.01" />
+                <span asp-validation-for="ValorAdquisicion" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="col-md-6">
             <div class="form-group mb-3">
                 <label asp-for="EstadoProducto" class="control-label"></label>
                 <select asp-for="EstadoProducto" class="form-control">
@@ -81,47 +125,34 @@
                     <option value="false">Inactivo</option>
                 </select>
             </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="StockActual" class="control-label"></label>
-                <input asp-for="StockActual" class="form-control" type="number" min="0" value="0" />
-                <span asp-validation-for="StockActual" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="StockMinimo" class="control-label"></label>
-                <input asp-for="StockMinimo" class="form-control" type="number" min="0" value="0" />
-                <span asp-validation-for="StockMinimo" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="PrecioUnitario" class="control-label"></label>
-                <input asp-for="PrecioUnitario" class="form-control" type="number" step="0.01" min="0.01" />
-                <span asp-validation-for="PrecioUnitario" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="ValorAdquisicion" class="control-label"></label>
-                <input asp-for="ValorAdquisicion" class="form-control" type="number" step="0.01" min="0.01" />
-                <span asp-validation-for="ValorAdquisicion" class="text-danger"></span>
-            </div>
-
+        </div>
+        <div class="col-md-6">
             <div class="form-group mb-3">
                 <label asp-for="FechaAdquisicion" class="control-label"></label>
                 <input asp-for="FechaAdquisicion" class="form-control" type="datetime-local" />
                 <span asp-validation-for="FechaAdquisicion" class="text-danger"></span>
             </div>
-
-            <div class="form-group">
-                <input type="submit" value="Crear" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Volver a la lista</a>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
+
+    <div class="form-group mt-3">
+        <input type="submit" value="Crear" class="btn btn-primary" />
+        <a asp-action="Index" class="btn btn-secondary">Volver a la lista</a>
+    </div>
+</form>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Inicializa Select2 para el dropdown de Categorías
+            $('#categoriaSelect').select2();
+
+            // Inicializa Select2 para el dropdown de Proveedores
+            $('#proveedorSelect').select2();
+        });
+    </script>
 }
