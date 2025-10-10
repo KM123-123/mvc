@@ -1,0 +1,171 @@
+﻿@using mvc.ViewModels
+@model DashboardViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Dashboard Gerencial";
+    var culture = new CultureInfo("es-GT"); // Para formato de moneda Quetzales
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="form-inline">
+            <div class="form-group mb-2">
+                <label for="fechaInicio" class="mr-2">Desde:</label>
+                <input type="date" id="fechaInicio" name="fechaInicio" value="@Model.FechaInicio.ToString("yyyy-MM-dd")" class="form-control mr-3" />
+            </div>
+            <div class="form-group mb-2">
+                <label for="fechaFin" class="mr-2">Hasta:</label>
+                <input type="date" id="fechaFin" name="fechaFin" value="@Model.FechaFin.ToString("yyyy-MM-dd")" class="form-control mr-3" />
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">Filtrar</button>
+        </form>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Ingresos Totales</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.IngresosTotales.ToString("C", culture)</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Ganancia Bruta</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.GananciaBruta.ToString("C", culture)</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-money-bill-wave fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Nº de Ventas</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.NumeroDeVentas</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-clipboard-list fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">PROMEDIO POR VENTA</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TicketPromedio.ToString("C", culture)</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-receipt fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Evolución de Ventas</h6></div>
+            <div class="card-body"><canvas id="graficoVentasPorDia"></canvas></div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Ventas por Categoría</h6></div>
+            <div class="card-body"><canvas id="graficoVentasPorCategoria"></canvas></div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Top 5 Productos por Ingresos</h6></div>
+            <div class="card-body"><canvas id="graficoTopProductos"></canvas></div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // --- GRÁFICO 1: VENTAS POR DÍA (LÍNEAS) ---
+            const ventasDiaData = @Html.Raw(Json.Serialize(Model.VentasPorDia));
+            const ctxLinea = document.getElementById('graficoVentasPorDia').getContext('2d');
+            new Chart(ctxLinea, {
+                type: 'line',
+                data: {
+                    labels: ventasDiaData.map(d => d.dimension),
+                    datasets: [{
+                        label: 'Ingresos',
+                        data: ventasDiaData.map(d => d.total),
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // --- GRÁFICO 2: VENTAS POR CATEGORÍA (PIE) ---
+            const ventasCategoriaData = @Html.Raw(Json.Serialize(Model.VentasPorCategoria));
+            const ctxPie = document.getElementById('graficoVentasPorCategoria').getContext('2d');
+            new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ventasCategoriaData.map(d => d.dimension),
+                    datasets: [{
+                        data: ventasCategoriaData.map(d => d.total),
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // --- GRÁFICO 3: TOP PRODUCTOS (BARRAS) ---
+            const topProductosData = @Html.Raw(Json.Serialize(Model.TopProductos));
+            const ctxBarra = document.getElementById('graficoTopProductos').getContext('2d');
+            new Chart(ctxBarra, {
+                type: 'bar',
+                data: {
+                    labels: topProductosData.map(d => d.dimension),
+                    datasets: [{
+                        label: 'Total Vendido',
+                        data: topProductosData.map(d => d.total),
+                        backgroundColor: '#4e73df'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        });
+    </script>
+}

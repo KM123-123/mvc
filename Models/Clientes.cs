@@ -31,11 +31,16 @@ namespace mvc.Models
         [Display(Name = "Correo Electrónico")]
         public string? Correo { get; set; }
 
+
+
         [Required]
         [StringLength(20)]
         [Display(Name = "Estado")]
         public string Estado { get; set; } = "Activo"; // Por defecto "Activo"
 
+        [Display(Name = "Fecha de Registro")]
+        [DataType(DataType.Date)]
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
         /*
         // Relación con ventas (un cliente puede tener varias ventas)
         public virtual ICollection<Venta>? Ventas { get; set; }*/

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using mvc.Data;
 using mvc.Models;
 using QuestPDF.Infrastructure; //Para Pdf
+using mvc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddIdentity<Usuario, IdentityRole>()
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 //Para utilizar pdf
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;

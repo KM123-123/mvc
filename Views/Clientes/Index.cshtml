@@ -24,6 +24,7 @@
             <th>@Html.DisplayNameFor(model => model.Telefono)</th>
             <th>@Html.DisplayNameFor(model => model.Correo)</th>
             <th>@Html.DisplayNameFor(model => model.Estado)</th>
+            <th>@Html.DisplayNameFor(model => model.FechaCreacion)</th>
             <th>Acciones</th>
         </tr>
     </thead>
@@ -38,6 +39,7 @@
                 <td>@Html.DisplayFor(modelItem => item.Telefono)</td>
                 <td>@Html.DisplayFor(modelItem => item.Correo)</td>
                 <td>@Html.DisplayFor(modelItem => item.Estado)</td>
+                <td>@Html.DisplayFor(modelItem => item.FechaCreacion)</td>
                 <td class="text-nowrap">
                     <div class="btn-group btn-group-sm" role="group">
                         <a asp-action="Edit" asp-route-id="@item.ClienteID" class="btn btn-warning">✏ Editar</a>
