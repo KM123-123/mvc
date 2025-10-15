@@ -1,0 +1,45 @@
+﻿@* Archivo: Views/Productos/Importar.cshtml *@
+@{
+    ViewData["Title"] = "Importar Productos";
+}
+
+<h1>Importar Productos desde Excel</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>Sube tu archivo .xlsx</h4>
+        <p>
+            Asegúrate de que el archivo tenga el formato correcto. Las columnas deben ser:
+            <strong>CodigoProducto, NombreProducto, Categoria, Proveedor, EstadoProducto, StockActual, StockMinimo, PrecioUnitario, ValorAdquisicion, FechaAdquisicion</strong>.
+        </p>
+        <p>
+            <a href="/templates/plantilla_productos.xlsx" download>Descargar plantilla de ejemplo</a>
+        </p>
+
+        <form asp-action="Importar" method="post" enctype="multipart/form-data">
+            <div class="form-group mb-3">
+                <label for="archivoExcel" class="form-label">Seleccionar Archivo Excel</label>
+                <input type="file" name="archivoExcel" class="form-control" accept=".xlsx" required />
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Procesar Archivo" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Muestra mensajes de éxito o error que vienen del controlador *@
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success mt-3">@TempData["Success"]</div>
+}
+@if (TempData["Exception"] != null)
+{
+    <div class="alert alert-danger mt-3">
+        <strong>Errores encontrados:</strong>
+        <pre>@TempData["Exception"]</pre>
+    </div>
+}

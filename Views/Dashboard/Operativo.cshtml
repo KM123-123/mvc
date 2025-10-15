@@ -4,128 +4,176 @@
 
 @{
     ViewData["Title"] = "Dashboard Operativo";
-    var culture = new CultureInfo("es-GT"); // Para formato de moneda Quetzales
+    var culture = new CultureInfo("es-GT");
 }
 
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
-</div>
+<style>
+    body.dark-mode .dashboard-operativo-view h1,
+    body.dark-mode .dashboard-operativo-view h3,
+    body.dark-mode .dashboard-operativo-view h4,
+    body.dark-mode .dashboard-operativo-view h6 {
+        color: #f5f6f7 !important;
+    }
 
-<div class="row">
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Ventas de Hoy</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.VentasHoy.ToString("C", culture)</div>
-                    </div>
-                    <div class="col-auto"><i class="fas fa-calendar-day fa-2x text-gray-300"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Nuevos Clientes Hoy</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.NuevosClientesHoy</div>
-                    </div>
-                    <div class="col-auto"><i class="fas fa-user-plus fa-2x text-gray-300"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card border-left-danger shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Productos con Bajo Stock</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ProductosBajoStock</div>
-                    </div>
-                    <div class="col-auto"><i class="fas fa-box-open fa-2x text-gray-300"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    body.dark-mode .dashboard-operativo-view .card {
+        background-color: #242526;
+        border-color: #3a3b3c;
+    }
 
-<div class="row">
+    body.dark-mode .dashboard-operativo-view .card-header {
+        background-color: rgba(0,0,0,0.2);
+        border-bottom: 1px solid #3a3b3c;
+    }
 
-    <div class="col-lg-7">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Ranking de Vendedores (Mes Actual)</h6>
-            </div>
-            <div class="card-body">
-                @if (Model.RankingVendedoresMes.Any())
-                {
-                    @foreach (var vendedor in Model.RankingVendedoresMes)
-                    {
-                        <h4 class="small font-weight-bold">@vendedor.NombreVendedor <span class="float-right">@vendedor.TotalVendido.ToString("C", culture)</span></h4>
-                        <div class="progress mb-4">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: @((Model.RankingVendedoresMes.Max(v => v.TotalVendido) > 0 ? (vendedor.TotalVendido / Model.RankingVendedoresMes.Max(v => v.TotalVendido) * 100) : 0).ToString(CultureInfo.InvariantCulture))%"
-                                 aria-valuenow="@vendedor.TotalVendido" aria-valuemin="0" aria-valuemax="@Model.RankingVendedoresMes.Max(v=>v.TotalVendido)"></div>
+    body.dark-mode .dashboard-operativo-view .text-gray-800 {
+        color: #f5f6f7 !important;
+    }
+
+    body.dark-mode .dashboard-operativo-view .table {
+        color: #e4e6eb !important;
+    }
+
+        body.dark-mode .dashboard-operativo-view .table thead th {
+            color: #f5f6f7 !important;
+        }
+
+        body.dark-mode .dashboard-operativo-view .table td,
+        body.dark-mode .dashboard-operativo-view .table th {
+            border-top: 1px solid #3a3b3c;
+        }
+
+    body.dark-mode .dashboard-operativo-view .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark-mode .dashboard-operativo-view .progress {
+        background-color: #3a3b3c;
+    }
+</style>
+
+<div class="dashboard-operativo-view">
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Ventas de Hoy</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.VentasHoy.ToString("C", culture)</div>
                         </div>
+                        <div class="col-auto"><i class="fas fa-calendar-day fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Nuevos Clientes Hoy</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.NuevosClientesHoy</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-user-plus fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Productos con Bajo Stock</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ProductosBajoStock</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-box-open fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ranking de Vendedores (Mes Actual)</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.RankingVendedoresMes.Any())
+                    {
+                        @foreach (var vendedor in Model.RankingVendedoresMes)
+                        {
+                            <h4 class="small font-weight-bold">@vendedor.NombreVendedor <span class="float-right">@vendedor.TotalVendido.ToString("C", culture)</span></h4>
+                            <div class="progress mb-4">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: @((Model.RankingVendedoresMes.Max(v => v.TotalVendido) > 0 ? (vendedor.TotalVendido / Model.RankingVendedoresMes.Max(v => v.TotalVendido) * 100) : 0).ToString(CultureInfo.InvariantCulture))%"
+                                     aria-valuenow="@vendedor.TotalVendido" aria-valuemin="0" aria-valuemax="@Model.RankingVendedoresMes.Max(v=>v.TotalVendido)"></div>
+                            </div>
+                        }
                     }
-                }
-                else
-                {
-                    <p>No hay ventas registradas este mes.</p>
-                }
+                    else
+                    {
+                        <p>No hay ventas registradas este mes.</p>
+                    }
+                </div>
             </div>
-        </div>
 
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Últimas 5 Ventas</h6>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm table-striped">
-                        <thead><tr><th>ID</th><th>Cliente</th><th>Producto</th><th>Total</th></tr></thead>
-                        <tbody>
-                            @foreach (var venta in Model.UltimasVentas)
-                            {
-                                <tr>
-                                    <td>@venta.VentaID</td>
-                                    <td>@venta.ClienteNombre</td>
-                                    <td>@venta.ProductoNombre</td>
-                                    <td>@venta.Total.ToString("C", culture)</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Últimas 5 Ventas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-force-dark-text">
+                            <thead><tr><th>ID</th><th>Cliente</th><th>Producto</th><th>Total</th></tr></thead>
+                            <tbody>
+                                @foreach (var venta in Model.UltimasVentas)
+                                {
+                                    <tr>
+                                        <td>@venta.VentaID</td>
+                                        <td>@venta.ClienteNombre</td>
+                                        <td>@venta.ProductoNombre</td>
+                                        <td>@venta.Total.ToString("C", culture)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-lg-5">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-danger">Productos que Necesitan Reabastecimiento</h6>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead><tr><th>Producto</th><th class="text-center">Actual</th><th class="text-center">Mínimo</th></tr></thead>
-                        <tbody>
-                            @foreach (var prod in Model.ProductosParaReabastecer)
-                            {
-                                <tr>
-                                    <td>@prod.NombreProducto</td>
-                                    <td class="text-center"><span class="badge badge-danger">@prod.StockActual</span></td>
-                                    <td class="text-center">@prod.StockMinimo</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+        <div class="col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-danger">Productos que Necesitan Reabastecimiento</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Producto</th><th class="text-center">Actual</th><th class="text-center">Mínimo</th></tr></thead>
+                            <tbody>
+                                @foreach (var prod in Model.ProductosParaReabastecer)
+                                {
+                                    <tr>
+                                        <td>@prod.NombreProducto</td>
+                                        <td class="text-center"><span class="badge badge-danger">@prod.StockActual</span></td>
+                                        <td class="text-center">@prod.StockMinimo</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
+
     </div>
-</div>
+</div> 

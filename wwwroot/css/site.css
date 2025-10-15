@@ -1,58 +1,194 @@
-/* --- NUEVO BLOQUE --- */
-/* Controla el tamaño base y elimina el scroll horizontal del cuerpo de la página */
+ï»¿/* =============================================================== */
+/* ==                 PALETA DE COLORES Y TEMAS                   == */
+/* =============================================================== */
+:root {
+    --bg-primary: #f0f2f5;
+    --bg-content: #ffffff;
+    --bg-sidebar: #2c3e50;
+    --text-primary: #34495e;
+    --text-secondary: #ffffff;
+    --border-color: #dee2e6;
+    --table-stripe-bg: #f8f9fa;
+    --accent-color: #3498db;
+}
+
+body.dark-mode {
+    --bg-primary: #18191a;
+    --bg-content: #242526;
+    --bg-sidebar: #1f2021;
+    --text-primary: #f5f6f7;
+    --text-secondary: #b0b3b8;
+    --border-color: #3a3b3c;
+    --table-stripe-bg: rgba(0, 0, 0, 0.2);
+    --accent-color: #5dade2;
+}
+
+/* =============================================================== */
+/* ==                     ESTILOS GENERALES                       == */
+/* =============================================================== */
 html, body {
     height: 100%;
     overflow-x: hidden;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Estilos para el layout con Sidebar */
-
-/* Contenedor principal que usa Flexbox para alinear el sidebar y el contenido */
 .wrapper {
     display: flex;
     width: 100%;
     align-items: stretch;
 }
 
-#sidebar {
-    min-width: 250px;
-    max-width: 250px;
-    background: #343a40;
-    color: #fff;
-    transition: all 0.3s;
-    min-height: calc(100vh - 56px);
-}
-
-    /* Estilo para los elementos del menú en el sidebar */
-    #sidebar .nav-item .nav-link {
-        padding: 10px 15px;
-        font-size: 1.1em;
-        display: block;
-        color: rgba(255, 255, 255, 0.7);
-        text-align: center;
-    }
-
-        /* Color del enlace al pasar el mouse por encima */
-        #sidebar .nav-item .nav-link:hover {
-            color: #fff;
-            background: #495057;
-        }
-
-/* --- BLOQUE MODIFICADO --- */
-/* Contenedor para el contenido principal */
 #content {
-    padding: 20px;
+    padding: 24px;
     min-height: calc(100vh - 56px);
     transition: all 0.3s;
     display: flex;
     flex-direction: column;
-    /* --- LÍNEAS CLAVE PARA CONTROLAR EL SCROLL --- */
-    flex-grow: 1; /* Hace que el contenido ocupe el espacio horizontal restante */
-    min-width: 0; /* Evita que el contenido muy ancho rompa el layout */
-    overflow-y: auto; /* La barra de scroll VERTICAL solo aparecerá AQUÍ si es necesario */
+    flex-grow: 1;
+    min-width: 0;
+    overflow-y: auto;
 }
 
-    /* Le dice al contenido principal que ocupe todo el espacio sobrante */
-    #content main {
-        flex-grow: 1;
+/* =============================================================== */
+/* ==         TARJETA DE CONTENIDO (PARA VISTAS DE TABLAS)        == */
+/* =============================================================== */
+.content-card {
+    background-color: var(--bg-content);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease-in-out;
+}
+
+/* =============================================================== */
+/* ==               COMPONENTES (SIDEBAR, ETC)                    == */
+/* =============================================================== */
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: var(--bg-sidebar);
+    transition: all 0.3s;
+    min-height: calc(100vh - 56px);
+    border-right: 1px solid var(--border-color);
+}
+
+    #sidebar.hidden {
+        margin-left: -250px;
     }
+
+    #sidebar .nav-item .nav-link {
+        padding: 12px 20px;
+        font-size: 1rem;
+        display: block;
+        color: var(--text-secondary);
+        text-align: left;
+        border-left: 3px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+        #sidebar .nav-item .nav-link:hover {
+            background: rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+            border-left: 3px solid var(--accent-color);
+        }
+
+/* =============================================================== */
+/* ==    ANULACIÃ“N DEL MODO OSCURO PARA TABLAS (content-card)   == */
+/* =============================================================== */
+body.dark-mode .content-card {
+    background-color: #ffffff;
+    color: #34495e;
+    border-color: #dee2e6;
+}
+
+    body.dark-mode .content-card .table, body.dark-mode .content-card .table thead th, body.dark-mode .content-card .dataTables_wrapper {
+        color: #34495e;
+        border-color: #dee2e6;
+    }
+
+    body.dark-mode .content-card .table-striped > tbody > tr:nth-of-type(odd) > * {
+        background-color: #f8f9fa;
+    }
+
+    body.dark-mode .content-card .form-control, body.dark-mode .content-card .form-select {
+        background-color: #ffffff;
+        color: #34495e;
+        border-color: #ced4da;
+    }
+
+/* =============================================================== */
+/* ==             ESTILOS GENERALES PARA LOS DASHBOARDS           == */
+/* =============================================================== */
+body.dark-mode .dashboard-view {
+    color: var(--text-primary);
+}
+
+    body.dark-mode .dashboard-view h1, body.dark-mode .dashboard-view .h3 {
+        color: var(--text-primary) !important;
+    }
+
+    body.dark-mode .dashboard-view .card {
+        background-color: var(--bg-content);
+        border-color: var(--border-color);
+    }
+
+    body.dark-mode .dashboard-view .card-header {
+        background-color: rgba(0,0,0,0.2);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    body.dark-mode .dashboard-view .text-gray-800 {
+        color: var(--text-primary) !important;
+    }
+
+    body.dark-mode .dashboard-view .text-gray-300 {
+        color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    body.dark-mode .dashboard-view .text-primary {
+        color: var(--accent-color) !important;
+    }
+
+    body.dark-mode .dashboard-view .text-success {
+        color: #2ecc71 !important;
+    }
+
+    body.dark-mode .dashboard-view .text-info {
+        color: #3498db !important;
+    }
+
+    body.dark-mode .dashboard-view .text-warning {
+        color: #f1c40f !important;
+    }
+
+    body.dark-mode .dashboard-view .text-danger {
+        color: #e74c3c !important;
+    }
+
+    body.dark-mode .dashboard-view h4, body.dark-mode .dashboard-view h6 {
+        color: var(--text-primary);
+    }
+
+    body.dark-mode .dashboard-view .progress {
+        background-color: #3a3b3c;
+    }
+
+    body.dark-mode .dashboard-view .badge-danger {
+        background-color: #e74c3c;
+        color: #fff;
+    }
+
+
+/* =============================================================== */
+/* == âœ… SOLUCIÃ“N PARA TABLA "ÃšLTIMAS VENTAS" MODO OSCURO âœ… == */
+/* =============================================================== */
+/* Esta regla es especÃ­fica para la tabla a la que le aÃ±adimos la clase */
+body.dark-mode .table-force-dark-text,
+body.dark-mode .table-force-dark-text th,
+body.dark-mode .table-force-dark-text td {
+    color: #FFFFFF !important; /* Texto blanco brillante, sin excepciones */
+}

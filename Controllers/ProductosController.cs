@@ -8,6 +8,13 @@ using Microsoft.Extensions.Logging;
 using mvc.Data;
 using mvc.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+// --- ASEGÚRATE DE QUE ESTAS LÍNEAS ESTÉN AQUÍ ---
+using Microsoft.AspNetCore.Http; // Para IFormFile
+using OfficeOpenXml;             // ¡La más importante para EPPlus!
+using System.Collections.Generic; // Para List<>
+using System.IO;                  // Para MemoryStream
+using System.Text;                // Para StringBuilder
 
 namespace mvc.Controllers
 {
@@ -370,6 +377,176 @@ namespace mvc.Controllers
                 ViewData["CategoriaID"] = new List<SelectListItem>();
                 ViewData["ProveedorID"] = new List<SelectListItem>();
             }
+        }
+
+        // GET: Productos/Importar
+        // Este método solo muestra la página con el formulario de subida.
+        public IActionResult Importar()
+        {
+            return View();
+        }
+
+        // POST: Productos/Importar
+        // Este método recibe y procesa el archivo Excel.
+        [HttpPost]
+        public async Task<IActionResult> Importar(IFormFile archivoExcel)
+        {
+            if (archivoExcel == null || archivoExcel.Length == 0)
+            {
+                TempData["Exception"] = "Por favor, selecciona un archivo.";
+                return RedirectToAction(nameof(Importar));
+            }
+
+            var productosParaAgregar = new List<Productos>();
+            var errores = new StringBuilder();
+            int fila = 2; // Empezamos en la fila 2 para saltar el encabezado
+
+            try
+            {
+                // Pre-cargar datos para validaciones eficientes
+                var categoriasDict = await _context.Categoria
+                    .ToDictionaryAsync(c => c.Nombre.ToLower(), c => c.CategoriaID);
+                var proveedoresDict = await _context.Proveedores
+                    .ToDictionaryAsync(p => p.NombreProveedor.ToLower(), p => p.ProveedorID);
+                var codigosExistentes = _context.Productos
+                    .Select(p => p.CodigoProducto.ToLower()).ToHashSet();
+
+                using (var stream = new MemoryStream())
+                {
+                    await archivoExcel.CopyToAsync(stream);
+                    using (var package = new ExcelPackage(stream))
+                    {
+                        var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+                        if (worksheet == null)
+                        {
+                            TempData["Exception"] = "El archivo Excel está vacío o no tiene hojas de cálculo.";
+                            return RedirectToAction(nameof(Importar));
+                        }
+
+                        int rowCount = worksheet.Dimension.Rows;
+
+                        for (int i = fila; i <= rowCount; i++)
+                        {
+                            var codigoProducto = worksheet.Cells[i, 1].Value?.ToString()?.Trim();
+
+                            // --- INICIO DE VALIDACIONES POR FILA ---
+                            if (string.IsNullOrWhiteSpace(codigoProducto))
+                            {
+                                errores.AppendLine($"Fila {i}: El 'CodigoProducto' es obligatorio.");
+                                continue;
+                            }
+                            if (codigosExistentes.Contains(codigoProducto.ToLower()) || productosParaAgregar.Any(p => p.CodigoProducto.ToLower() == codigoProducto.ToLower()))
+                            {
+                                errores.AppendLine($"Fila {i}: El código '{codigoProducto}' ya existe en la base de datos o en el mismo archivo.");
+                                continue;
+                            }
+
+                            var nombreProducto = worksheet.Cells[i, 2].Value?.ToString()?.Trim();
+                            if (string.IsNullOrWhiteSpace(nombreProducto))
+                            {
+                                errores.AppendLine($"Fila {i}: El 'NombreProducto' es obligatorio.");
+                                continue;
+                            }
+
+                            var nombreCategoria = worksheet.Cells[i, 3].Value?.ToString()?.Trim().ToLower();
+                            if (!categoriasDict.TryGetValue(nombreCategoria, out int categoriaId))
+                            {
+                                errores.AppendLine($"Fila {i}: La categoría '{worksheet.Cells[i, 3].Value?.ToString()}' no existe.");
+                                continue;
+                            }
+
+                            var nombreProveedor = worksheet.Cells[i, 4].Value?.ToString()?.Trim().ToLower();
+                            int? proveedorId = null;
+                            if (!string.IsNullOrEmpty(nombreProveedor))
+                            {
+                                if (!proveedoresDict.TryGetValue(nombreProveedor, out int idEncontrado))
+                                {
+                                    errores.AppendLine($"Fila {i}: El proveedor '{worksheet.Cells[i, 4].Value?.ToString()}' no existe.");
+                                    continue;
+                                }
+                                proveedorId = idEncontrado;
+                            }
+
+                            if (!bool.TryParse(worksheet.Cells[i, 5].Value?.ToString()?.ToLower() ?? "true", out bool estado))
+                            {
+                                estado = (worksheet.Cells[i, 5].Value?.ToString()?.ToLower() == "activo");
+                            }
+
+                            if (!int.TryParse(worksheet.Cells[i, 6].Value?.ToString(), out int stockActual))
+                            {
+                                errores.AppendLine($"Fila {i}: 'StockActual' debe ser un número entero.");
+                                continue;
+                            }
+
+                            if (!int.TryParse(worksheet.Cells[i, 7].Value?.ToString(), out int stockMinimo))
+                            {
+                                errores.AppendLine($"Fila {i}: 'StockMinimo' debe ser un número entero.");
+                                continue;
+                            }
+
+                            if (!decimal.TryParse(worksheet.Cells[i, 8].Value?.ToString(), out decimal precioUnitario))
+                            {
+                                errores.AppendLine($"Fila {i}: 'PrecioUnitario' debe ser un número decimal válido.");
+                                continue;
+                            }
+
+                            if (!decimal.TryParse(worksheet.Cells[i, 9].Value?.ToString(), out decimal valorAdquisicion))
+                            {
+                                errores.AppendLine($"Fila {i}: 'ValorAdquisicion' debe ser un número decimal válido.");
+                                continue;
+                            }
+
+                            if (!DateTime.TryParse(worksheet.Cells[i, 10].Value?.ToString(), out DateTime fechaAdquisicion))
+                            {
+                                errores.AppendLine($"Fila {i}: 'FechaAdquisicion' debe ser una fecha válida (ej: dd/mm/aaaa).");
+                                continue;
+                            }
+                            // --- FIN DE VALIDACIONES ---
+
+                            // Si todas las validaciones pasan, creamos el objeto
+                            var producto = new Productos
+                            {
+                                CodigoProducto = codigoProducto,
+                                NombreProducto = nombreProducto,
+                                CategoriaID = categoriaId,
+                                ProveedorID = proveedorId,
+                                EstadoProducto = estado,
+                                StockActual = stockActual,
+                                StockMinimo = stockMinimo,
+                                PrecioUnitario = precioUnitario,
+                                ValorAdquisicion = valorAdquisicion,
+                                FechaAdquisicion = fechaAdquisicion
+                            };
+                            productosParaAgregar.Add(producto);
+                        }
+                    }
+                }
+
+                if (errores.Length > 0)
+                {
+                    TempData["Exception"] = errores.ToString();
+                    return RedirectToAction(nameof(Importar));
+                }
+
+                if (productosParaAgregar.Any())
+                {
+                    _context.Productos.AddRange(productosParaAgregar);
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = $"Se importaron {productosParaAgregar.Count} productos exitosamente.";
+                }
+                else
+                {
+                    TempData["Exception"] = "El archivo no contenía productos para agregar o todos tenían errores.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al importar productos desde Excel.");
+                TempData["Exception"] = "Ocurrió un error inesperado al procesar el archivo: " + ex.Message;
+                return RedirectToAction(nameof(Importar));
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

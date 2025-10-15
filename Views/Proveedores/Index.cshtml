@@ -7,13 +7,13 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
 
-<h1>Lista de Proveedores</h1>
+<h1>Proveedores</h1>
 
 <p>
     <a asp-action="Create" class="btn btn-primary">➕ Nuevo Proveedor</a>
 </p>
 
-<table id="tablaProveedores" class="table table-striped" style="width:100%">
+    <table id="tablaProveedores" class="table table-striped table-force-dark-text" style="width:100%">
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(model => model.ProveedorID)</th>
