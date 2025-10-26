@@ -30,13 +30,13 @@
             <dd class="col-sm-9">@Model.Producto?.CodigoProducto</dd>
 
             <dt class="col-sm-3">Precio Unitario:</dt>
-            <dd class="col-sm-9">Q@Model.Producto?.PrecioUnitario</dd>
+            <dd class="col-sm-9">Q@(Model.Producto?.PrecioUnitario)</dd>
 
             <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Cantidad)</dt>
             <dd class="col-sm-9">@Html.DisplayFor(model => model.Cantidad)</dd>
 
             <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Total)</dt>
-            <dd class="col-sm-9"><strong>Q@Html.DisplayFor(model => model.Total)</strong></dd>
+            <dd class="col-sm-9"><strong>Q@(Html.DisplayFor(model => model.Total))</strong></dd>
 
             <dt class="col-sm-3">@Html.DisplayNameFor(model => model.FechaVenta)</dt>
             <dd class="col-sm-9">@Model.FechaVenta.ToString("dd/MM/yyyy hh:mm tt")</dd>

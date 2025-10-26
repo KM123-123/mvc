@@ -165,6 +165,29 @@ namespace mvc.Controllers
             }
         }
 
+        // GET: Ventas/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            // Busca la venta que se quiere editar
+            var venta = await _context.Ventas.FindAsync(id);
+            if (venta == null)
+            {
+                return NotFound();
+            }
+
+            // Prepara los ViewBag (SelectLists de Clientes, Productos, etc.)
+            // y pasa el modelo 'venta' para que sepa qué valores seleccionar
+            await CargarDatosParaVista(venta);
+
+            // Muestra la vista de Edición (Edit.cshtml) con los datos de la venta
+            return View(venta);
+        }
+
         // POST: Ventas/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
