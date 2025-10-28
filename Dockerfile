@@ -1,34 +1,21 @@
-# Usar una imagen oficial de .NET para compilar y publicar
+# Etapa 1: Construir la aplicación
+# Usamos la imagen oficial del SDK de .NET 8 (cambia el 8.0 si usas otra versión)
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-ENV TZ=America/Guatemala
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# Copiar archivos del proyecto
-COPY . ./
-
-# Restaurar dependencias
+# Copiar los archivos de proyecto y restaurar dependencias
+COPY *.csproj .
 RUN dotnet restore
 
-# Compilar y publicar en modo release
-RUN dotnet publish -c Release -o /out
+# Copiar todo el resto del código y construir la app
+COPY . .
+RUN dotnet publish "mvc.csproj" -c Release -o /app/publish
 
-# Imagen ligera para ejecución
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Etapa 2: Crear la imagen final
+# Usamos la imagen de runtime, que es más ligera
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
+COPY --from=build /app/publish .
 
-# Copiar la salida de la compilación
-COPY --from=build /out ./
-
-# Configurar variables de entorno
-ENV ASPNETCORE_URLS=http://+:80
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
-
-# Exponer el puerto 8080
-EXPOSE 80
-
-#COPY junio.pfx /junio.pfx
-
-# Comando de inicio
+# Reemplaza "TuProyecto.dll" con el nombre real de la DLL de tu proyecto
 ENTRYPOINT ["dotnet", "mvc.dll"]

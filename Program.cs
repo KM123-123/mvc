@@ -8,6 +8,10 @@ using OfficeOpenXml; //Para el Importar el EXcel
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Esta línea lee la cadena de conexión desde el archivo appsettings.json
+// Y LUEGO la sobrescribe con la variable de entorno que definimos en docker-compose
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<ErpDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Conexion")));
 
