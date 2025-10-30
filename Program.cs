@@ -32,21 +32,6 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
 
-// 🔹 Crear roles automáticamente al iniciar
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    string[] roles = { "Administrador", "Empleado" };
-
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-        {
-            await roleManager.CreateAsync(new IdentityRole(role));
-        }
-    }
-}
-
 // 🔹 Configuración del pipeline HTTP
 if (!app.Environment.IsDevelopment())
 {
