@@ -4,32 +4,38 @@ using mvc.Data;
 using mvc.Models;
 using QuestPDF.Infrastructure; //Para Pdf
 using mvc.Services;
-using OfficeOpenXml; //Para el Importar el EXcel
+using OfficeOpenXml; //Para el Importar el Excel
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 🔹 Agregar configuración para soportar entornos (Docker, Development, etc.)
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
+// 🔹 Configurar la base de datos
 builder.Services.AddDbContext<ErpDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Conexion")));
 
+// 🔹 Identity (roles, usuarios)
 builder.Services.AddIdentity<Usuario, IdentityRole>()
     .AddEntityFrameworkStores<ErpDbContext>()
-    .AddDefaultTokenProviders(); // 🔹 Tokens para recuperar contraseñas, etc.
+    .AddDefaultTokenProviders();
 
-// Add services to the container.
+// 🔹 Otros servicios
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddTransient<IEmailService, EmailService>();
 
-//Para utilizar pdf
-QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+// 🔹 Para PDF
+QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
 
-// 🔹 Crear roles al iniciar la aplicación
+// 🔹 Crear roles automáticamente al iniciar
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
     string[] roles = { "Administrador", "Empleado" };
 
     foreach (var role in roles)
@@ -41,7 +47,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
+// 🔹 Configuración del pipeline HTTP
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -53,7 +59,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // ← Necesario para Identity
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
