@@ -44,5 +44,8 @@ ENV LC_ALL=es_ES.UTF-8
 # Exponer puerto
 EXPOSE 80
 
+# Configurar entorno temporalmente como Development para ver errores
+ENV ASPNETCORE_ENVIRONMENT=Development
+
 # Comando de inicio
 ENTRYPOINT ["dotnet", "mvc.dll"]
