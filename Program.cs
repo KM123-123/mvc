@@ -8,6 +8,13 @@ using OfficeOpenXml; // Para importar Excel
 using System.Globalization;
 using Microsoft.Extensions.Logging; // <-- AÑADIDO
 
+// --- INICIO: FORZAR CULTURA GUATEMALA ---
+// Esto arregla el formato de moneda (Q) y números (.).
+var cultureInfo = new CultureInfo("es-GT");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+// --- FIN: FORZAR CULTURA GUATEMALA ---
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 🔹 Cargar configuración principal
