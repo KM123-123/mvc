@@ -80,7 +80,7 @@ namespace mvc.Controllers
             return View();
         }
 
-        // --- MÉTODO CREATE [HttpPost] MODIFICADO ---
+        // --- MÉTODO CREATE [HttpPost] MODIFICADO (RÁPIDO) ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("VentaID,ClienteID,ProductoID,Cantidad,FechaVenta,Total")] Ventas venta)
@@ -137,7 +137,7 @@ namespace mvc.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    // --- INICIO DE LA LÓGICA DE ENVÍO DE CORREO CON PDF ---
+                    // --- INICIO DE LA LÓGICA DE ENVÍO DE CORREO (ASÍNCRONO) ---
                     var ventaCompleta = await _context.Ventas
                         .Include(v => v.Cliente)
                         .Include(v => v.Producto)
@@ -148,11 +148,28 @@ namespace mvc.Controllers
                         var logoPath = Path.Combine(_env.WebRootPath, "images", "LOGO UMG.jpg");
                         var documentoPdf = new VentaDocument(ventaCompleta, logoPath);
                         byte[] pdfBytes = documentoPdf.GeneratePdf();
-                        await _emailService.EnviarFacturaPorCorreoAsync(ventaCompleta, pdfBytes);
+
+                        // ¡ESTE ES EL CAMBIO!
+                        // No esperamos (await) al email. Lo "disparamos y olvidamos" en 
+                        // un hilo separado para que el usuario no tenga que esperar.
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await _emailService.EnviarFacturaPorCorreoAsync(ventaCompleta, pdfBytes);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Si el email falla, no bloqueamos al usuario.
+                                // Solo lo registramos en los logs del contenedor.
+                                Console.WriteLine($"Error de fondo al enviar email: {ex.Message}");
+                            }
+                        });
                     }
                     // --- FIN DE LA LÓGICA DE ENVÍO ---
 
-                    TempData["Success"] = "Venta creada y factura enviada exitosamente.";
+                    // El usuario recibe la respuesta INMEDIATAMENTE
+                    TempData["Success"] = "Venta creada exitosamente. La factura se está enviando al cliente.";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -165,6 +182,7 @@ namespace mvc.Controllers
             }
         }
 
+
         // GET: Ventas/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -173,18 +191,13 @@ namespace mvc.Controllers
                 return NotFound();
             }
 
-            // Busca la venta que se quiere editar
             var venta = await _context.Ventas.FindAsync(id);
             if (venta == null)
             {
                 return NotFound();
             }
 
-            // Prepara los ViewBag (SelectLists de Clientes, Productos, etc.)
-            // y pasa el modelo 'venta' para que sepa qué valores seleccionar
             await CargarDatosParaVista(venta);
-
-            // Muestra la vista de Edición (Edit.cshtml) con los datos de la venta
             return View(venta);
         }
 
@@ -267,12 +280,9 @@ namespace mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            // El resto de tus métodos no necesitan cambios...
-            // Los he omitido por brevedad, pero mantenlos en tu archivo.
             var venta = await _context.Ventas.FindAsync(id);
             if (venta != null)
             {
-                // Deberías devolver el stock aquí si eliminas una venta.
                 var producto = await _context.Productos.FindAsync(venta.ProductoID);
                 if (producto != null)
                 {
