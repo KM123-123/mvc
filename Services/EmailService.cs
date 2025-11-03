@@ -1,20 +1,24 @@
 ﻿using mvc.Models;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
 using System;
+using SendGrid; // <-- NUEVO USING
+using SendGrid.Helpers.Mail; // <-- NUEVO USING
 
 namespace mvc.Services
 {
     public class EmailService : IEmailService
     {
         private readonly IConfiguration _config;
+        private readonly ISendGridClient _sendGridClient; // <-- NUEVO CLIENTE
 
         public EmailService(IConfiguration config)
         {
             _config = config;
+
+            // Lee la API Key que pondremos en el comando de Docker
+            var apiKey = _config["SendGrid_ApiKey"];
+            _sendGridClient = new SendGridClient(apiKey);
         }
 
         public async Task EnviarFacturaPorCorreoAsync(Ventas venta, byte[] pdfFactura)
@@ -22,35 +26,43 @@ namespace mvc.Services
             try
             {
                 var emailSettings = _config.GetSection("EmailSettings");
-                var mensaje = new MimeMessage();
-                mensaje.From.Add(new MailboxAddress(emailSettings["FromName"], emailSettings["FromAddress"]));
-                mensaje.To.Add(new MailboxAddress(venta.Cliente.NombreCliente, venta.Cliente.Correo));
-                mensaje.Subject = $"Factura de tu compra - Venta #{venta.VentaID}";
 
-                var bodyBuilder = new BodyBuilder();
-                bodyBuilder.HtmlBody = $@"
+                // 1. Crear remitente y destinatario
+                var from = new EmailAddress(emailSettings["FromAddress"], emailSettings["FromName"]);
+                var to = new EmailAddress(venta.Cliente.Correo, venta.Cliente.NombreCliente);
+
+                // 2. Crear contenido del correo
+                var subject = $"Factura de tu compra - Venta #{venta.VentaID}";
+                var htmlContent = $@"
                     <h1>¡Hola, {venta.Cliente.NombreCliente}!</h1>
                     <p>Gracias por tu compra. Adjuntamos la factura de tu pedido #{venta.VentaID} en formato PDF.</p>
                     <p>¡Esperamos verte pronto!</p>
                     <p>Atentamente,<br>El equipo de {emailSettings["FromName"]}</p>";
+                // Fallback por si el cliente no puede ver HTML
+                var plainTextContent = "Gracias por tu compra. Adjuntamos tu factura.";
 
-                // Se agrega el PDF como un archivo adjunto.
-                bodyBuilder.Attachments.Add($"Factura-{venta.VentaID}.pdf", pdfFactura, ContentType.Parse("application/pdf"));
+                // 3. Crear el mensaje de SendGrid
+                var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
 
-                mensaje.Body = bodyBuilder.ToMessageBody();
+                // 4. Adjuntar el PDF
+                // SendGrid necesita el archivo en Base64
+                var pdfBase64 = Convert.ToBase64String(pdfFactura);
+                msg.AddAttachment($"Factura-{venta.VentaID}.pdf", pdfBase64, "application/pdf");
 
-                using (var clienteSmtp = new SmtpClient())
+                // 5. Enviar el correo usando la API de SendGrid
+                var response = await _sendGridClient.SendEmailAsync(msg);
+
+                // (Opcional) Registrar si SendGrid dio un error
+                if (!response.IsSuccessStatusCode)
                 {
-                    await clienteSmtp.ConnectAsync(emailSettings["SmtpServer"], int.Parse(emailSettings["Port"]), SecureSocketOptions.StartTls);
-                    await clienteSmtp.AuthenticateAsync(emailSettings["FromAddress"], emailSettings["SmtpPassword"]);
-                    await clienteSmtp.SendAsync(mensaje);
-                    await clienteSmtp.DisconnectAsync(true);
+                    Console.WriteLine($"Error al enviar con SendGrid: {response.StatusCode}");
+                    string responseBody = await response.Body.ReadAsStringAsync();
+                    Console.WriteLine($"Cuerpo del error de SendGrid: {responseBody}");
                 }
             }
             catch (Exception ex)
             {
-                // En un proyecto real, aquí registrarías el error en un log.
-                Console.WriteLine($"Error al enviar correo con factura: {ex.Message}");
+                Console.WriteLine($"Error al enviar correo con factura (SendGrid): {ex.Message}");
             }
         }
     }
