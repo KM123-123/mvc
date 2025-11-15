@@ -24,12 +24,15 @@ RUN dotnet publish -c Release -o /out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# Instalar soporte de locales y ICU para es-ES
+# --- INICIO DE LA MODIFICACIÓN ---
+# Instalar soporte de locales (Guatemala), ICU y LIBGDI+ para Excel
 RUN apt-get update && apt-get install -y \
         locales \
         icu-devtools \
-    && locale-gen es_ES.UTF-8 \
+        libgdiplus \
+    && locale-gen es_GT.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+# --- FIN DE LA MODIFICACIÓN ---
 
 # Copiar la salida de compilación desde la etapa build
 COPY --from=build /out ./
@@ -37,9 +40,12 @@ COPY --from=build /out ./
 # Configurar variables de entorno
 ENV ASPNETCORE_URLS=http://+:80
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-ENV LANG=es_ES.UTF-8
-ENV LANGUAGE=es_ES:es
-ENV LC_ALL=es_ES.UTF-8
+# --- INICIO DE LA MODIFICACIÓN ---
+# Configurar locale para Guatemala
+ENV LANG=es_GT.UTF-8
+ENV LANGUAGE=es_GT:es
+ENV LC_ALL=es_GT.UTF-8
+# --- FIN DE LA MODIFICACIÓN ---
 
 # Exponer puerto
 EXPOSE 80
