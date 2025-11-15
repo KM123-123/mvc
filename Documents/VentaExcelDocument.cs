@@ -2,6 +2,7 @@
 using mvc.Models;
 using ClosedXML.Excel;
 using System.IO;
+using System; // <--- Añade este si falta
 // ---------------------------------------------------
 
 namespace mvc.Documents
@@ -22,18 +23,16 @@ namespace mvc.Documents
                 var worksheet = workbook.Worksheets.Add($"Factura-{_venta.VentaID}");
 
                 // --- 1. ENCABEZADO SUPERIOR (Información de la empresa y factura) ---
-                // Datos de la empresa (izquierda)
                 worksheet.Cell("A1").Value = "Universidad Mariano Galvez";
                 worksheet.Cell("A1").Style.Font.Bold = true;
                 worksheet.Cell("A2").Value = "Cuilapa Santa Rosa";
                 worksheet.Cell("A3").Value = "NIT: 57463-5";
 
-                // Datos de la factura (derecha)
                 var facturaCell = worksheet.Cell("C1");
                 facturaCell.Value = "FACTURA";
                 facturaCell.Style.Font.Bold = true;
                 facturaCell.Style.Font.FontSize = 20;
-                facturaCell.Style.Font.FontColor = XLColor.FromHtml("#00529B"); // Color azul
+                facturaCell.Style.Font.FontColor = XLColor.FromHtml("#00529B");
 
                 worksheet.Cell("B3").Value = "N° FACTURA";
                 worksheet.Cell("C3").Value = _venta.VentaID;
@@ -43,7 +42,6 @@ namespace mvc.Documents
                 worksheet.Cell("C5").Value = _venta.FechaVenta.AddDays(90).ToString("dd/M/yyyy");
                 worksheet.Range("B3:B5").Style.Font.Bold = true;
                 worksheet.Range("C3:C5").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-
 
                 // --- 2. DATOS DEL CLIENTE ---
                 var clientBox = worksheet.Range("A7:E10");
@@ -62,11 +60,10 @@ namespace mvc.Documents
                 worksheet.Cell("C11").Value = _venta.Cliente?.Direccion ?? "N/A";
                 worksheet.Range("B9:B11").Style.Font.Bold = true;
 
-
                 // --- 3. TABLA DE ARTÍCULOS ---
                 var currentRow = 13;
                 var headerTable = worksheet.Range($"A{currentRow}:E{currentRow}");
-                headerTable.Style.Fill.BackgroundColor = XLColor.FromHtml("#E3F2FD"); // Azul claro
+                headerTable.Style.Fill.BackgroundColor = XLColor.FromHtml("#E3F2FD");
                 headerTable.Style.Font.Bold = true;
 
                 worksheet.Cell(currentRow, 1).Value = "CÓDIGO";
@@ -75,7 +72,6 @@ namespace mvc.Documents
                 worksheet.Cell(currentRow, 4).Value = "PRECIO UNITARIO";
                 worksheet.Cell(currentRow, 5).Value = "TOTAL";
 
-                // Fila del producto vendido
                 currentRow++;
                 worksheet.Cell(currentRow, 1).Value = _venta.Producto?.CodigoProducto ?? "N/A";
                 worksheet.Cell(currentRow, 2).Value = _venta.Producto?.NombreProducto ?? "N/A";
@@ -86,7 +82,7 @@ namespace mvc.Documents
                 worksheet.Range($"A{currentRow}:E{currentRow}").Style.Border.BottomBorderColor = XLColor.LightGray;
 
                 // --- 4. CÁLCULO Y DESGLOSE DE TOTALES ---
-                currentRow += 2; // Dejar un espacio
+                currentRow += 2;
                 var total = _venta.Total;
                 var subtotal = total / 1.12m;
                 var iva = total - subtotal;
@@ -99,7 +95,6 @@ namespace mvc.Documents
 
                 worksheet.Range($"D{currentRow - 1}:D{currentRow}").Style.Font.Bold = true;
 
-                // Bloque final de TOTAL FACTURA
                 currentRow++;
                 var totalBox = worksheet.Range($"D{currentRow}:E{currentRow}");
                 totalBox.Style.Fill.BackgroundColor = XLColor.LightGray;
@@ -109,12 +104,11 @@ namespace mvc.Documents
                 worksheet.Cell(currentRow, 4).Value = "TOTAL FACTURA";
                 worksheet.Cell(currentRow, 5).Value = total;
 
-
                 // --- Formatos y Ajustes Finales ---
-                worksheet.Column(2).Width = 30; // Ancho para el nombre del artículo
+                worksheet.Column(2).Width = 30;
                 worksheet.Column(4).Style.NumberFormat.Format = "\"Q\"#,##0.00";
                 worksheet.Column(5).Style.NumberFormat.Format = "\"Q\"#,##0.00";
-                worksheet.Columns("A,C,D,E").AdjustToContents(); // Ajustar el resto
+                worksheet.Columns("A,C,D,E").AdjustToContents();
 
                 // --- Generar y Devolver ---
                 using (var stream = new MemoryStream())

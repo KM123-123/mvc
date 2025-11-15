@@ -9,12 +9,12 @@ using mvc.Data;
 using mvc.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
-using mvc.Documents;
+using mvc.Documents; // <-- NECESARIO PARA EL EXCEL
 using QuestPDF.Fluent;
 using Microsoft.AspNetCore.Hosting;
-using ClosedXML.Excel;
-using System.IO;
-using mvc.Services; // <-- USING AGREGADO
+using ClosedXML.Excel; // <-- NECESARIO PARA EL EXCEL
+using System.IO; // <-- NECESARIO PARA EL EXCEL
+using mvc.Services;
 
 namespace mvc.Controllers
 {
@@ -24,15 +24,14 @@ namespace mvc.Controllers
         private readonly ErpDbContext _context;
         private readonly UserManager<Usuario> _userManager;
         private readonly IWebHostEnvironment _env;
-        private readonly IEmailService _emailService; // <-- CAMPO AGREGADO PARA EL SERVICIO
+        private readonly IEmailService _emailService;
 
-        // --- CONSTRUCTOR MODIFICADO ---
         public VentasController(ErpDbContext context, UserManager<Usuario> userManager, IWebHostEnvironment env, IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _env = env;
-            _emailService = emailService; // <-- ASIGNACIÓN DEL SERVICIO
+            _emailService = emailService;
         }
 
         // GET: Ventas
@@ -80,7 +79,7 @@ namespace mvc.Controllers
             return View();
         }
 
-        // --- MÉTODO CREATE [HttpPost] MODIFICADO (RÁPIDO) ---
+        // POST: Ventas/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("VentaID,ClienteID,ProductoID,Cantidad,FechaVenta,Total")] Ventas venta)
@@ -137,7 +136,6 @@ namespace mvc.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    // --- INICIO DE LA LÓGICA DE ENVÍO DE CORREO (ASÍNCRONO) ---
                     var ventaCompleta = await _context.Ventas
                         .Include(v => v.Cliente)
                         .Include(v => v.Producto)
@@ -149,9 +147,6 @@ namespace mvc.Controllers
                         var documentoPdf = new VentaDocument(ventaCompleta, logoPath);
                         byte[] pdfBytes = documentoPdf.GeneratePdf();
 
-                        // ¡ESTE ES EL CAMBIO!
-                        // No esperamos (await) al email. Lo "disparamos y olvidamos" en 
-                        // un hilo separado para que el usuario no tenga que esperar.
                         _ = Task.Run(async () =>
                         {
                             try
@@ -160,15 +155,11 @@ namespace mvc.Controllers
                             }
                             catch (Exception ex)
                             {
-                                // Si el email falla, no bloqueamos al usuario.
-                                // Solo lo registramos en los logs del contenedor.
                                 Console.WriteLine($"Error de fondo al enviar email: {ex.Message}");
                             }
                         });
                     }
-                    // --- FIN DE LA LÓGICA DE ENVÍO ---
 
-                    // El usuario recibe la respuesta INMEDIATAMENTE
                     TempData["Success"] = "Venta creada exitosamente. La factura se está enviando al cliente.";
                     return RedirectToAction(nameof(Index));
                 }
@@ -182,21 +173,12 @@ namespace mvc.Controllers
             }
         }
 
-
         // GET: Ventas/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
             var venta = await _context.Ventas.FindAsync(id);
-            if (venta == null)
-            {
-                return NotFound();
-            }
-
+            if (venta == null) return NotFound();
             await CargarDatosParaVista(venta);
             return View(venta);
         }
@@ -296,6 +278,7 @@ namespace mvc.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // --- EXPORTAR PDF ---
         public async Task<IActionResult> GenerarPdfVenta(int id)
         {
             var venta = await _context.Ventas
@@ -316,18 +299,55 @@ namespace mvc.Controllers
             return _context.Ventas.Any(e => e.VentaID == id);
         }
 
+        // --- EXCEL GRUPAL (ARREGLADO) ---
         public async Task<IActionResult> GenerarExcelVentas()
         {
             var ventas = await _context.Ventas
                 .Include(v => v.Cliente)
                 .Include(v => v.Producto)
                 .Include(v => v.Usuario)
+                .OrderByDescending(v => v.FechaVenta)
                 .ToListAsync();
 
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Reporte de Ventas");
-                // ... (tu código para el Excel grupal)
+
+                var currentRow = 1;
+
+                // Escribir Cabeceras
+                worksheet.Cell(currentRow, 1).Value = "Venta ID";
+                worksheet.Cell(currentRow, 2).Value = "Fecha";
+                worksheet.Cell(currentRow, 3).Value = "Cliente";
+                worksheet.Cell(currentRow, 4).Value = "Producto";
+                worksheet.Cell(currentRow, 5).Value = "Cantidad";
+                worksheet.Cell(currentRow, 6).Value = "Total";
+                worksheet.Cell(currentRow, 7).Value = "Vendedor";
+
+                // Estilo para cabeceras
+                var headerRange = worksheet.Range($"A{currentRow}:G{currentRow}");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#E3F2FD");
+
+                // Escribir Datos
+                foreach (var venta in ventas)
+                {
+                    currentRow++;
+                    worksheet.Cell(currentRow, 1).Value = venta.VentaID;
+                    worksheet.Cell(currentRow, 2).Value = venta.FechaVenta;
+                    worksheet.Cell(currentRow, 3).Value = venta.Cliente?.NombreCliente ?? "N/A";
+                    worksheet.Cell(currentRow, 4).Value = venta.Producto?.NombreProducto ?? "N/A";
+                    worksheet.Cell(currentRow, 5).Value = venta.Cantidad;
+                    worksheet.Cell(currentRow, 6).Value = venta.Total;
+                    worksheet.Cell(currentRow, 7).Value = venta.Usuario?.UserName ?? "N/A";
+                }
+
+                // Formato de Columnas
+                worksheet.Column(2).Style.DateFormat.Format = "dd/MM/yyyy HH:mm";
+                worksheet.Column(6).Style.NumberFormat.Format = "\"Q\"#,##0.00";
+                worksheet.Columns().AdjustToContents();
+
+                // Guardar y enviar
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
@@ -337,12 +357,27 @@ namespace mvc.Controllers
             }
         }
 
+        // --- EXCEL INDIVIDUAL (ARREGLADO) ---
         public async Task<IActionResult> GenerarExcelVentaIndividual(int id)
         {
-            // ... (tu código para el Excel individual)
-            return Ok(); // Placeholder
+            // 1. Buscar la venta completa (igual que en PDF)
+            var venta = await _context.Ventas
+                .Include(v => v.Cliente)
+                .Include(v => v.Producto)
+                .Include(v => v.Usuario)
+                .FirstOrDefaultAsync(m => m.VentaID == id);
+
+            if (venta == null) return NotFound();
+
+            // 2. Usar tu clase 'VentaExcelDocument'
+            var documentoExcel = new VentaExcelDocument(venta);
+            byte[] excelBytes = documentoExcel.GenerateExcel();
+
+            // 3. Devolver el archivo
+            return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Factura-{venta.VentaID}.xlsx");
         }
 
+        // --- MÉTODO PRIVADO (SIN CAMBIOS) ---
         private async Task CargarDatosParaVista(Ventas venta)
         {
             var user = await _userManager.GetUserAsync(User);
